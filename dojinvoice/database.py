@@ -54,6 +54,7 @@ class DojinvoiceDatabase(object):
                     title text not null,
                     circle text not null,
                     circle_link text not null,
+                    category text not null,
                     sale_date integer not null,
                     age_zone text not null,
                     file_format text not null,
@@ -132,6 +133,7 @@ class DojinvoiceDatabase(object):
                               data['title'],
                               data['circle'],
                               data['circle_link'],
+                              data['category'],
                               data['sale_date'],
                               data['age_zone'],
                               data['file_format'],
@@ -175,7 +177,7 @@ class DojinvoiceDatabase(object):
                                    for genre in data['genres']])
 
         self.__connect_db(
-            'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?)', work_data)
+            'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?,?)', work_data)
         self.__connect_db(
             'insert into option values (?,?,?,?,?,?,?,?,?,?)', option_data)
         self.__connect_db('insert into writer values (?,?)', writer_data)

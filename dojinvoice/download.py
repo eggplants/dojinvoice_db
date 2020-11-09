@@ -6,6 +6,11 @@ from typing import Callable
 import requests
 from bs4 import BeautifulSoup as BS  # type: ignore
 
+UA = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_5) '
+    'AppleWebKit/537.36 (KHTML, like Gecko) '
+    'Chrome/67.0.3396.99 Safari/537.36'}
+
 
 class Download(object):
     def __init__(self, site: str) -> None:
@@ -38,7 +43,7 @@ class Download(object):
             filename = '{:04}.html'.format(pagenation)
             url = root.format(pagenation)
             print(url, end="\r")
-            fid = requests.get(url).text
+            fid = requests.get(url, headers=UA).text
             if chk_work_exist(fid):
                 save_file(fid, filename)
             else:
@@ -49,7 +54,7 @@ class Download(object):
     def get_dmm_pages(self):
         root = 'https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/page={}'
         url_certification = BS(
-            requests.get(root.format(1)).text, 'lxml'
+            requests.get(root.format(1), headers=UA).text, 'lxml'
         ).find(
             'a', class_="ageCheck__link ageCheck__link--r18"
         ).get('href')

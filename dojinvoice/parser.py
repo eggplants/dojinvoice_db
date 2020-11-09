@@ -5,11 +5,11 @@ from typing import List, Optional, TypedDict, Union, cast
 
 from bs4 import BeautifulSoup as BS  # type: ignore
 from humanfriendly import parse_size
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium import webdriver  # type: ignore
+from selenium.webdriver.chrome.options import Options  # type: ignore
+from selenium.webdriver.common.by import By  # type: ignore
+from selenium.webdriver.support import expected_conditions  # type: ignore
+from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 
 class ParseUnknownSite(Exception):
@@ -24,6 +24,7 @@ class DlsiteDict(TypedDict):
     circle_link: str
     sale_date: int
     age_zone: str
+    category: str
     file_format: str
     file_size: int
     description: str
@@ -92,12 +93,14 @@ class Parser(object):
         self.driver.get(
             'https://www.dlsite.com/maniax/work/=/product_id/RJ305341.html')
         WebDriverWait(self.driver, 15).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'btn_yes')))
+            expected_conditions.presence_of_element_located(
+                (By.CLASS_NAME, 'btn_yes')))
         btn = self.driver.find_element_by_class_name('btn-approval')
         if btn:
             btn.click()
 
-    def parse(self, path: str, page_idx: int = 0) -> Union[List[DlsiteDict], List[DmmDict]]:
+    def parse(self, path: str, page_idx: int = 0
+              ) -> Union[List[DlsiteDict], List[DmmDict]]:
         """Extract required information from the page sources and scrape it."""
         self.page_idx = page_idx
         if self.site == 'dlsite':
@@ -135,14 +138,22 @@ class Parser(object):
             data['cien_link'] = (cien.a['href'] if cien else None)
             info_table = {_.th.string: _.td for _ in bs.find(
                 'table', id='work_outline').find_all('tr')}
-            data['sale_date'] = int(dt.strptime(
-                info_table['販売日'].a.string, '%Y年%m月%d日').timestamp())
+
+            sale_date = info_table['販売日'].a.string
+            if '時' in sale_date:
+                data['sale_date'] = int(dt.strptime(
+                    info_table['販売日'].a.string, '%Y年%m月%d日 %H時').timestamp())
+            else:
+                data['sale_date'] = int(dt.strptime(
+                    info_table['販売日'].a.string, '%Y年%m月%d日').timestamp())
+
+            data['category'] = info_table['作品形式'].a.string
             data['series'] = (
                 info_table['シリーズ名'].a.string
                 if 'シリーズ名' in info_table else None)
             data['writers'] = (
-                [_.string for _ in info_table['作家'].find_all('a')]
-                if '作家' in info_table else None)
+                [_.string for _ in info_table['作者'].find_all('a')]
+                if '作者' in info_table else None)
             data['scenarios'] = (
                 [_.string for _ in info_table['シナリオ'].find_all('a')]
                 if 'シナリオ' in info_table else None)
@@ -160,8 +171,9 @@ class Parser(object):
             data['genres'] = (
                 [_.string for _ in info_table['ジャンル'].find_all('a')]
                 if 'ジャンル' in info_table else None)
+            file_size = info_table['ファイル容量'].div.string
             data['file_size'] = parse_size(
-                info_table['ファイル容量'].div.string.replace('計', '').replace('総', ''))
+                file_size.replace('計', '').replace('総', ''))
             trial_elm = bs.find('div', class_='trial_download clearfix')
             data['trial_link'] = (
                 'https:' + trial_elm.a['href']
@@ -179,14 +191,15 @@ class Parser(object):
                 int(sales.get_text().replace(',', '')) if sales else None)
             favorites = bs.find('dd', class_='position_fix')
             data['favorites'] = (
-                int(favorites.get_text().replace(',', '')) if favorites else None)
+                int(favorites.get_text().replace(',', ''))
+                if favorites else None)
             data['price'] = int(bs.find(
                 'div', class_='work_buy_content'
             ).get_text().replace(',', '').replace('円', ''))
             chobit = bs.find('div', class_='work_parts type_chobit')
             data['chobit_link'] = (
                 chobit.iframe['src'] if chobit else None)
-            print(data)
+            # print(data)
             sleep(uniform(0.1, 1.0))
             res.append(data)
         return res
