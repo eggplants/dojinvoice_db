@@ -32,13 +32,11 @@ def main() -> None:
     }
     for site in parsed_data.keys():
         parser = dojinvoice.parser.Parser(site)
-        for page_idx, path in enumerate(get_filepaths(site)[:1]):
+        for page_idx, path in enumerate(get_filepaths(site)):
             parsed_data[site].extend(parser.parse(path, page_idx))
 
     db = dojinvoice.database.DojinvoiceDatabase('dojinvoice.db')
-    if not os.path.exists('dojinvoice.db'):
-        db.create_tables()
-
+    db.create_tables()
     db.push(parsed_data['dlsite'])
 
 
