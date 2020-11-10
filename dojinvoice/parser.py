@@ -89,6 +89,7 @@ class Parser(object):
         options.add_argument('--proxy-bypass-list=*')
         options.add_argument('--start-maximized')
         options.add_argument('--user-agent={}'.format(UA['User-Agent']))
+        print('Preparing for headless chrome...', end='\r')
         self.driver = webdriver.Chrome(options=options)
         self.driver.get(
             'https://www.dlsite.com/maniax/work/=/product_id/RJ305341.html')
@@ -121,7 +122,7 @@ class Parser(object):
                        for _ in bs.find_all(
             'li', class_='search_result_img_box_inner')]
         for idx, work_link in enumerate(work_links):
-            print('{}: '.format(100*self.page_idx+idx+1), work_link)
+            print('{}:\t{}'.format(100*self.page_idx+idx+1, work_link))
             data = cast('DlsiteDict', {})
             self.driver.get(work_link)
             bs = BS(self.driver.page_source, 'lxml')
