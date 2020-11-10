@@ -1,5 +1,6 @@
 from sqlite3 import Error, connect
-from typing import Callable, Iterable, List, Union
+from sys import stderr
+from typing import Any, Callable, Iterable, List, Union
 
 from .parser import DlsiteDict, DmmDict
 
@@ -35,9 +36,8 @@ class DojinvoiceDatabase(object):
 
             conn.commit()
         except Error as e:
-            print(e)
-            import sys
-            print(p, file=sys.stderr)
+            print(e, file=stderr)
+            print(p, file=stderr)
         finally:
             if conn:
                 conn.close()
@@ -176,14 +176,40 @@ class DojinvoiceDatabase(object):
                 genre_data.extend([(data['work_id'], genre)
                                    for genre in data['genres']])
 
-        self.__connect_db(
-            'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?,?)', work_data)
-        self.__connect_db(
-            'insert into option values (?,?,?,?,?,?,?,?,?,?)', option_data)
-        self.__connect_db('insert into writer values (?,?)', writer_data)
-        self.__connect_db('insert into scenario values (?,?)', scenario_data)
-        self.__connect_db(
-            'insert into illustrator values (?,?)', illustrator_data)
-        self.__connect_db('insert into voice values (?,?)', voice_data)
-        self.__connect_db('insert into musician values (?,?)', musician_data)
-        self.__connect_db('insert into genre values (?,?)', genre_data)
+        lists = [
+            (
+                'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                work_data
+            ),
+            (
+                'insert into option values (?,?,?,?,?,?,?,?,?,?)',
+                option_data
+            ),
+            (
+                'insert into writer values (?,?)',
+                writer_data
+            ),
+            (
+                'insert into scenario values (?,?)',
+                scenario_data
+            ),
+            (
+                'insert into illustrator values (?,?)',
+                illustrator_data
+            ),
+            (
+                'insert into voice values (?,?)',
+                voice_data
+            ),
+            (
+                'insert into musician values (?,?)',
+                musician_data
+            ),
+            (
+                'insert into genre values (?,?)',
+                genre_data
+            )
+        ]
+        uniq: Callable[[List[Any]], List[Any]] = lambda lis: list(set(lis))
+        for query, lis in lists:
+            self.__connect_db(query, uniq(lis))
