@@ -15,6 +15,6 @@ RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 ENV DISPLAY=:99
 
 # pip
-RUN pip install -U pip && pip install dojinvoice_db
+RUN pip install -U pip && pip install dojinvoice-db
 
 CMD ["/bin/bash"]
