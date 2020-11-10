@@ -26,6 +26,9 @@ def main() -> None:
         dojinvoice.download.Download('dlsite').get_all_pages()
         # dojinvoice.download.Download('dmm').get_all_pages()
 
+    db = dojinvoice.database.DojinvoiceDatabase('dojinvoice.db')
+    db.create_tables()
+
     parsed_data: DojinDict = {
         'dlsite': []
         # 'dmm': []
@@ -33,11 +36,10 @@ def main() -> None:
     for site in parsed_data.keys():
         parser = dojinvoice.parser.Parser(site)
         for page_idx, path in enumerate(get_filepaths(site)):
+            print('\033[31mNow: {}\033[0m'.format(path))
             parsed_data[site].extend(parser.parse(path, page_idx))
-
-    db = dojinvoice.database.DojinvoiceDatabase('dojinvoice.db')
-    db.create_tables()
-    db.push(parsed_data['dlsite'])
+            db.push(parsed_data['dlsite'])
+            parsed_data['dlsite'] = []
 
 
 if __name__ == '__main__':
