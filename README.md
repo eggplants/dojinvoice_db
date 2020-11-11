@@ -6,6 +6,7 @@
 
 - 同人音声DB
   - DLsite
+    - <https://www.dlsite.com/maniax/works/voice>
 
 ## スキーマ
 
