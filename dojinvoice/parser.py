@@ -89,7 +89,7 @@ class Parser(object):
         options.add_argument('--proxy-bypass-list=*')
         options.add_argument('--start-maximized')
         options.add_argument('--user-agent={}'.format(UA['User-Agent']))
-        print('Preparing for headless chrome...', end='\r')
+        print('Preparing for headless chrome...', end='', flush=True)
         self.driver = webdriver.Chrome(options=options)
         self.driver.get(
             'https://www.dlsite.com/maniax/work/=/product_id/RJ305341.html')
@@ -113,7 +113,6 @@ class Parser(object):
 
     def __parse_dlsite_pages(self, path: str) -> List[DlsiteDict]:
         res = []
-        print(path, end="\r")
         bs = BS(open(path, 'r'), 'lxml')
         work_links = [_.find('a').get('href')
                       for _ in bs.find_all(
@@ -122,7 +121,7 @@ class Parser(object):
                        for _ in bs.find_all(
             'li', class_='search_result_img_box_inner')]
         for idx, work_link in enumerate(work_links):
-            print('{}:\t{}'.format(100*self.page_idx+idx+1, work_link))
+            print('\33[2K\r{}: {}'.format(100*self.page_idx+idx+1, work_link), end='')
             data = cast('DlsiteDict', {})
             self.driver.get(work_link)
             bs = BS(self.driver.page_source, 'lxml')
