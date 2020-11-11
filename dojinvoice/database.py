@@ -8,13 +8,13 @@ DatasDict = List[Union[DlsiteDict, DmmDict]]
 
 
 class DojinvoiceDatabase(object):
-    def __init__(self, db_filepath: str) -> None:
+    def __init__(self, db_filepath: str, log: str = 'log') -> None:
         """Init."""
         self.db_filepath = db_filepath
-        self.log = open('log', 'w')
-        self.init_database()
+        self.log = open(log, 'w')
+        self.__init_database()
 
-    def init_database(self) -> None:
+    def __init_database(self) -> None:
         """Create a db file and tables if not exists."""
         connect(self.db_filepath)
 
@@ -37,6 +37,7 @@ class DojinvoiceDatabase(object):
             conn.commit()
         except Error as e:
             print(e, file=stderr)
+            print(sql, file=stderr)
             print(p, file=stderr)
         finally:
             if conn:

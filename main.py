@@ -35,8 +35,9 @@ def main() -> None:
     }
     for site in parsed_data.keys():
         parser = dojinvoice.parser.Parser(site)
-        for page_idx, path in enumerate(get_filepaths(site)):
-            print('\033[31mNow: {}\033[0m'.format(path))
+        targets = get_filepaths(site)
+        for page_idx, path in enumerate(targets):
+            print('\33[2K\r\033[31mNow: {}\033[0m'.format(path))
             parsed_data[site].extend(parser.parse(path, page_idx))
             db.push(parsed_data['dlsite'])
             parsed_data['dlsite'] = []

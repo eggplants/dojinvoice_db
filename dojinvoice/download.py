@@ -42,14 +42,12 @@ class Download(object):
         for pagenation in range(1, 1000):
             filename = '{:04}.html'.format(pagenation)
             url = root.format(pagenation)
-            print(url, end="\r")
+            print('\33[2K\r{}'.format(url), end='', flush=True)
             fid = requests.get(url, headers=UA).text
             if chk_work_exist(fid):
                 save_file(fid, filename)
             else:
                 break
-
-        print(' ' * 30, end='\r')
 
     def get_dmm_pages(self):
         root = 'https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/page={}'
@@ -78,7 +76,6 @@ class Download(object):
         for pagenation in range(1, max_page):
             filename = '{:04}.html'.format(pagenation)
             url = root.format(pagenation)
-            print(url, end="\r")
+            print('\33[2K\r{}'.format(url), end='', flush=True)
             source = session.get(url).text
             save_file(source, filename)
-        print(' ' * 30, end='\r')
