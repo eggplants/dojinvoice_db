@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="dojinvoice_db",
-    version="0.0.3",
+    version="0.0.4",
     description="Make DB of Dojinvoice",
     description_content_type="",
     long_description=open('README.md').read(),
