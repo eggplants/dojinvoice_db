@@ -29,12 +29,16 @@ def main() -> None:
     db = dojinvoice.database.DojinvoiceDatabase('dojinvoice.db')
     db.create_tables()
 
+    exclude_ids: List[str] = []
+    if input('Exclude committed work ids from? >> ') == 'y':
+        exclude_ids = db.get_work_ids()
+
     parsed_data: DojinDict = {
         'dlsite': []
         # 'dmm': []
     }
     for site in parsed_data.keys():
-        parser = dojinvoice.parser.Parser(site)
+        parser = dojinvoice.parser.Parser(site, exclude_ids)
         targets = get_filepaths(site)
         for page_idx, path in enumerate(targets):
             print('\33[2K\r\033[31mNow: {}\033[0m'.format(path))

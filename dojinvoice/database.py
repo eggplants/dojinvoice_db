@@ -24,9 +24,9 @@ class DojinvoiceDatabase(object):
         conn = None
         try:
             conn = connect(self.db_filepath)
-            call_func: Callable[[str], None] = lambda _:\
-                print(_, file=self.log)
-            conn.set_trace_callback(call_func)
+            # call_func: Callable[[str], None] = lambda _:\
+            #     print(_, file=self.log)
+            # conn.set_trace_callback(call_func)
 
             c = conn.cursor()
             if not p:
@@ -43,6 +43,12 @@ class DojinvoiceDatabase(object):
             if conn:
                 conn.close()
 
+    def get_work_ids(self) -> List[str]:
+        conn = connect(self.db_filepath)
+        c = conn.cursor().execute('select work_id from work')
+        conn.close()
+        return [i for i in c]
+
     def create_tables(self) -> None:
         """Create the tables."""
         create_table: Callable[[str], None] = lambda schema:\
@@ -57,7 +63,6 @@ class DojinvoiceDatabase(object):
                     circle_link text not null,
                     category text not null,
                     sale_date integer not null,
-                    age_zone text not null,
                     file_format text not null,
                     file_size text not null,
                     description str not null,
@@ -136,12 +141,12 @@ class DojinvoiceDatabase(object):
                               data['circle_link'],
                               data['category'],
                               data['sale_date'],
-                              data['age_zone'],
                               data['file_format'],
                               data['file_size'],
                               data['description'],
                               data['monopoly'],
                               data['price']))
+
             option_data.append((data['work_id'],
                                 data['thumbnail'],
                                 data['cien_link'],
@@ -153,6 +158,7 @@ class DojinvoiceDatabase(object):
                                 data['trial_size'],
                                 data['rating'],
                                 ))
+
             if data['writers'] is not None:
                 writer_data.extend([(data['work_id'], writer)
                                     for writer in data['writers']])
@@ -179,7 +185,7 @@ class DojinvoiceDatabase(object):
 
         lists = [
             (
-                'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?)',
                 work_data
             ),
             (

@@ -4,7 +4,7 @@ from time import sleep
 from typing import List, Optional, TypedDict, Union, cast
 
 from bs4 import BeautifulSoup as BS  # type: ignore
-from humanfriendly import parse_size
+from humanfriendly import parse_size  # type: ignore
 from selenium import webdriver  # type: ignore
 from selenium.webdriver.chrome.options import Options  # type: ignore
 from selenium.webdriver.common.by import By  # type: ignore
@@ -23,7 +23,6 @@ class DlsiteDict(TypedDict):
     circle: str
     circle_link: str
     sale_date: int
-    age_zone: str
     category: str
     file_format: str
     file_size: int
@@ -78,9 +77,10 @@ UA = {
 
 class Parser(object):
 
-    def __init__(self, site: str) -> None:
+    def __init__(self, site: str, exclude_ids: List[str] = []) -> None:
         """Init."""
         self.site = site
+        self.exclude_ids = exclude_ids
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
@@ -121,11 +121,15 @@ class Parser(object):
                        for _ in bs.find_all(
             'li', class_='search_result_img_box_inner')]
         for idx, work_link in enumerate(work_links):
-            print('\33[2K\r{}: {}'.format(100*self.page_idx+idx+1, work_link), end='')
+            print('\33[2K\r{}: {}'.format(
+                100*self.page_idx+idx+1, work_link), end='')
+            work_id = work_link.split("/")[-1][:-5]
+            if work_id in self.exclude_ids:
+                continue
             data = cast('DlsiteDict', {})
             self.driver.get(work_link)
             bs = BS(self.driver.page_source, 'lxml')
-            data['work_id'] = work_link.split("/")[-1][:-5]
+            data['work_id'] = work_id
             data['detail_link'] = work_link
             data['title'] = bs.h1.a.string
             data['thumbnail'] = ('https:' + thumb_links[idx]
@@ -166,7 +170,6 @@ class Parser(object):
             data['musicians'] = (
                 [_.string for _ in info_table['音楽'].find_all('a')]
                 if '音楽' in info_table else None)
-            data['age_zone'] = info_table['年齢指定'].string
             data['file_format'] = info_table['ファイル形式'].get_text()
             data['genres'] = (
                 [_.string for _ in info_table['ジャンル'].find_all('a')]

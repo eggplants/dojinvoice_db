@@ -4,7 +4,7 @@
 
 [![PyPI version](https://badge.fury.io/py/dojinvoice-db.svg)](https://badge.fury.io/py/dojinvoice_db) [![Maintainability](https://api.codeclimate.com/v1/badges/f9942612576bc3a99dbd/maintainability)](https://codeclimate.com/github/eggplants/dojinvoice_db/maintainability) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
-- 同人音声DB
+- 同人音声 DB
   - DLsite
     - <https://www.dlsite.com/maniax/works/voice>
 
@@ -20,7 +20,6 @@
                     circle_link text not null,
                     category text not null,
                     sale_date integer not null,
-                    age_zone text not null,
                     file_format text not null,
                     file_size text not null,
                     description str not null,
