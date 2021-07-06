@@ -186,6 +186,7 @@ class DojinvoiceDatabase(object):
                 genre_data.extend([(data['work_id'], genre)
                                    for genre in data['genres']])
 
+        lists: List[tuple[Any, Any]]
         lists = [
             (
                 'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
