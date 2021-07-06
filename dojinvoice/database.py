@@ -36,9 +36,9 @@ class DojinvoiceDatabase(object):
 
             conn.commit()
         except Error as e:
-            print(e, file=stderr)
-            print(sql, file=stderr)
-            print(p, file=stderr)
+            print('[DB Error]:', e, file=stderr)
+            print('- [SQL]:', sql, file=stderr)
+            print('- [Return]:', p, file=stderr)
         finally:
             if conn:
                 conn.close()
@@ -46,8 +46,9 @@ class DojinvoiceDatabase(object):
     def get_work_ids(self) -> List[str]:
         conn = connect(self.db_filepath)
         c = conn.cursor().execute('select work_id from work')
+        res = [i[0] for i in c]
         conn.close()
-        return [i for i in c]
+        return res
 
     def create_tables(self) -> None:
         """Create the tables."""
@@ -63,6 +64,7 @@ class DojinvoiceDatabase(object):
                     circle_link text not null,
                     category text not null,
                     sale_date integer not null,
+                    age_zone text not null,
                     file_format text not null,
                     file_size text not null,
                     description str not null,
@@ -141,6 +143,7 @@ class DojinvoiceDatabase(object):
                               data['circle_link'],
                               data['category'],
                               data['sale_date'],
+                              data['age_zone'],
                               data['file_format'],
                               data['file_size'],
                               data['description'],
@@ -185,7 +188,7 @@ class DojinvoiceDatabase(object):
 
         lists = [
             (
-                'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?)',
+                'insert into work values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
                 work_data
             ),
             (

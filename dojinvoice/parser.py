@@ -23,6 +23,7 @@ class DlsiteDict(TypedDict):
     circle: str
     circle_link: str
     sale_date: int
+    age_zone: str
     category: str
     file_format: str
     file_size: int
@@ -170,6 +171,8 @@ class Parser(object):
             data['musicians'] = (
                 [_.string for _ in info_table['音楽'].find_all('a')]
                 if '音楽' in info_table else None)
+            data['age_zone'] = ','.join(
+                [i.string for i in info_table['年齢指定'].find_all('span')])
             data['file_format'] = info_table['ファイル形式'].get_text()
             data['genres'] = (
                 [_.string for _ in info_table['ジャンル'].find_all('a')]

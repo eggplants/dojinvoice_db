@@ -30,8 +30,9 @@ def main() -> None:
     db.create_tables()
 
     exclude_ids: List[str] = []
-    if input('Exclude committed work ids from? >> ') == 'y':
+    if input('Exclude committed work ids from en existed db? >> ') == 'y':
         exclude_ids = db.get_work_ids()
+        # print(exclude_ids)
 
     parsed_data: DojinDict = {
         'dlsite': []
