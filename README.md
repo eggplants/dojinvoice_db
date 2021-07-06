@@ -20,6 +20,7 @@
                     circle_link text not null,
                     category text not null,
                     sale_date integer not null,
+                    age_zone text not null,
                     file_format text not null,
                     file_size text not null,
                     description str not null,
