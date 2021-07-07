@@ -14,7 +14,7 @@
 $ pip install dojinvoice-db
 $ dvdb
 Download pages? >> (`y` or Enter)
-<int> ids was committed work ids to existed db!
+<int> ids was committed to existed db!
 Now: ./dlsite/00001.html
 Now: ./dlsite/00002.html
 Now: ./dlsite/00003.html

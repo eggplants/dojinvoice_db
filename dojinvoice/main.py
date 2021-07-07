@@ -32,7 +32,7 @@ def main() -> None:
 
     exclude_ids: List[str] = db.get_work_ids()
     if len(exclude_ids) > 0:
-        print(len(exclude_ids), 'ids was committed work ids to existed db!')
+        print(len(exclude_ids), 'ids was committed to existed db!')
 
     parsed_data: DojinDict = {
         'dlsite': []
