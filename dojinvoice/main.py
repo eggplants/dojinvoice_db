@@ -30,10 +30,9 @@ def main() -> None:
     db = DojinvoiceDatabase('dojinvoice.db')
     db.create_tables()
 
-    exclude_ids: List[str] = []
-    if os.path.exists('dojinvoice.db') and input('Exclude committed work ids from en existed db? >> ') == 'y':
-        exclude_ids = db.get_work_ids()
-        print(len(exclude_ids), 'ids found!')
+    exclude_ids: List[str] = db.get_work_ids()
+    if len(exclude_ids) > 0:
+        print(len(exclude_ids), 'ids was committed work ids to existed db!')
 
     parsed_data: DojinDict = {
         'dlsite': []
@@ -44,7 +43,9 @@ def main() -> None:
         targets = get_filepaths(site)
         for page_idx, path in enumerate(targets):
             print('\33[2K\r\033[31mNow: {}\033[0m'.format(path))
-            parsed_data[site].extend(p.parse(path, page_idx))  # type: ignore
+            d = p.parse(path, page_idx)
+            parsed_data[site].extend(d)  # type: ignore
+            print(' =>committing to DB...', end='')
             db.push(parsed_data['dlsite'])
             parsed_data['dlsite'] = []
 

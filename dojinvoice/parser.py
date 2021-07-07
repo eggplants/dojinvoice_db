@@ -85,12 +85,19 @@ class Parser(object):
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-extensions')
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-browser-side-navigation")
         options.add_argument('--proxy-server="direct://"')
         options.add_argument('--proxy-bypass-list=*')
         options.add_argument('--start-maximized')
         options.add_argument('--user-agent={}'.format(UA['User-Agent']))
+        options.add_experimental_option(
+            "excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
         print('Preparing for headless chrome...', end='', flush=True)
         self.driver = webdriver.Chrome(options=options)  # type: ignore
+        self.driver.set_page_load_timeout(60)
         self.driver.get(
             'https://www.dlsite.com/maniax/work/=/product_id/RJ305341.html')
         WebDriverWait(self.driver, 15).until(
@@ -129,6 +136,8 @@ class Parser(object):
             data = cast('DlsiteDict', {})
             self.driver.get(work_link)
             bs = BS(self.driver.page_source, 'lxml')
+            if not hasattr(bs.h1, 'a'):
+                continue
             data['work_id'] = work_id
             data['detail_link'] = work_link
             data['title'] = bs.h1.a.string

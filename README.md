@@ -14,13 +14,14 @@
 $ pip install dojinvoice-db
 $ dvdb
 Download pages? >> (`y` or Enter)
-Exclude committed work ids from en existed db? >> (`y` or Enter)
-<int> ids found!
+<int> ids was committed work ids to existed db!
 Now: ./dlsite/00001.html
 Now: ./dlsite/00002.html
 Now: ./dlsite/00003.html
 ...
 ```
+
+注意: _DB を一から構築するとかなり時間がかかります_
 
 ## スキーマ
 
