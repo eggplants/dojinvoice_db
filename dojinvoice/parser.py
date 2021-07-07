@@ -3,13 +3,12 @@ from random import uniform
 from time import sleep
 from typing import List, Optional, TypedDict, Union, cast
 
-from bs4 import BeautifulSoup as BS  # type: ignore
+from bs4 import BeautifulSoup as BS
 from humanfriendly import parse_size  # type: ignore
-from selenium import webdriver  # type: ignore
-from selenium.webdriver.chrome.options import Options  # type: ignore
-from selenium.webdriver.common.by import By  # type: ignore
-from selenium.webdriver.support import expected_conditions  # type: ignore
-from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class ParseUnknownSite(Exception):
@@ -82,7 +81,7 @@ class Parser(object):
         """Init."""
         self.site = site
         self.exclude_ids = exclude_ids
-        options = Options()
+        options = webdriver.ChromeOptions()   # type: ignore
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-extensions')
@@ -91,7 +90,7 @@ class Parser(object):
         options.add_argument('--start-maximized')
         options.add_argument('--user-agent={}'.format(UA['User-Agent']))
         print('Preparing for headless chrome...', end='', flush=True)
-        self.driver = webdriver.Chrome(options=options)
+        self.driver = webdriver.Chrome(options=options)  # type: ignore
         self.driver.get(
             'https://www.dlsite.com/maniax/work/=/product_id/RJ305341.html')
         WebDriverWait(self.driver, 15).until(
@@ -114,7 +113,7 @@ class Parser(object):
 
     def __parse_dlsite_pages(self, path: str) -> List[DlsiteDict]:
         res = []
-        bs = BS(open(path, 'r'), 'lxml')
+        bs = BS(open(path, 'r').read(), 'lxml')
         work_links = [_.find('a').get('href')
                       for _ in bs.find_all(
             'li', class_='search_result_img_box_inner')]

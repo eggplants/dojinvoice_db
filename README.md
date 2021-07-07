@@ -8,6 +8,20 @@
   - DLsite
     - <https://www.dlsite.com/maniax/works/voice>
 
+## 動かす
+
+```bash
+$ pip install dojinvoice-db
+$ dvdb
+Download pages? >> (`y` or Enter)
+Exclude committed work ids from en existed db? >> (`y` or Enter)
+<int> ids found!
+Now: ./dlsite/00001.html
+Now: ./dlsite/00002.html
+Now: ./dlsite/00003.html
+...
+```
+
 ## スキーマ
 
 ```python

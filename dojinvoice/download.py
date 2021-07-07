@@ -3,7 +3,7 @@ import shutil
 from typing import Callable
 
 import requests
-from bs4 import BeautifulSoup as BS  # type: ignore
+from bs4 import BeautifulSoup as BS
 
 UA = {
     'User-Agent': 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_5) '
