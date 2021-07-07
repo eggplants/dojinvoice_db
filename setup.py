@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup  # type: ignore
 
 setup(
     name="dojinvoice_db",
@@ -15,7 +15,7 @@ setup(
     install_requires=open('requirements.txt').read().splitlines(),
     entry_points={
         "console_scripts": [
-            "dvdb=main:main"
+            "dvdb=dojinvoice.main:main"
         ]
     }
 )

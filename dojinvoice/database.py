@@ -36,9 +36,13 @@ class DojinvoiceDatabase(object):
 
             conn.commit()
         except Error as e:
-            print('[DB Error]:', e, file=stderr)
-            print('- [SQL]:', sql, file=stderr)
-            print('- [Return]:', p, file=stderr)
+            msg = str(e)
+            if msg[0:5] == 'table' and msg[-14:] == 'already exists':
+                pass
+            else:
+                print('[DB Error]:', e, file=stderr)
+                print('- [SQL]:', sql, file=stderr)
+                print('- [Return]:', p, file=stderr)
         finally:
             if conn:
                 conn.close()
@@ -223,4 +227,6 @@ class DojinvoiceDatabase(object):
         ]
         uniq: Callable[[List[Any]], List[Any]] = lambda lis: list(set(lis))
         for query, lis in lists:
-            self.__connect_db(query, uniq(lis))
+            lis = uniq(lis)
+            if lis != []:
+                self.__connect_db(query, lis)
