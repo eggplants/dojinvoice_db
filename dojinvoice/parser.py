@@ -6,6 +6,7 @@ from typing import List, Optional, TypedDict, Union, cast
 from bs4 import BeautifulSoup as BS
 from humanfriendly import parse_size  # type: ignore
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
@@ -134,10 +135,21 @@ class Parser(object):
             if work_id in self.exclude_ids:
                 continue
             data = cast('DlsiteDict', {})
-            self.driver.get(work_link)
+
+            for i in range(5):
+                try:
+                    self.driver.get(work_link)
+                    break
+                except TimeoutException:
+                    pass
+            else:
+                raise ConnectionError
+
             bs = BS(self.driver.page_source, 'lxml')
-            if not hasattr(bs.h1, 'a'):
+            if not (hasattr(bs.h1, 'a') and hasattr(bs.h1.a, 'string')):
+                print('404 skipped:', work_link)
                 continue
+
             data['work_id'] = work_id
             data['detail_link'] = work_link
             data['title'] = bs.h1.a.string

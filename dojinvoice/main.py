@@ -39,8 +39,10 @@ def main() -> None:
         # 'dmm': []
     }
     for site in parsed_data.keys():
+        print('site:', site)
         p = Parser(site, exclude_ids)
         targets = get_filepaths(site)
+        print(len(targets), 'lists of works is found!')
         for page_idx, path in enumerate(targets):
             print('\33[2K\r\033[31mNow: {}\033[0m'.format(path))
             d = p.parse(path, page_idx)
@@ -48,6 +50,8 @@ def main() -> None:
             print(' =>committing to DB...', end='')
             db.push(parsed_data['dlsite'])
             parsed_data['dlsite'] = []
+
+        print('DONE:', site)
 
 
 if __name__ == '__main__':
