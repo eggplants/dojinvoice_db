@@ -139,5 +139,5 @@ cython_debug/
 dlsite/
 dmm/
 a.html
-# dojinvoice.db
+dojinvoice.db
 log
