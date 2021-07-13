@@ -21,7 +21,7 @@ Now: ./dlsite/00003.html
 ...
 ```
 
-注意: _DB を一から構築するとかなり時間がかかります_
+注意: _DB を一から構築するとかなり時間がかかります. 構築済DBは[Releases](https://github.com/eggplants/dojinvoice_db/releases)から
 
 ## スキーマ
 
