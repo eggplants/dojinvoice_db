@@ -35,28 +35,33 @@ class Download(object):
             "work_type_name%5B0%5D/%E3%83%9C%E3%82%A4%E3%82%B9%E3%83%BBASMR/"
             "per_page/100/page/{}"
         )
-        # Judge if articles exists in a source.
-        chk_work_exist: Callable[[str], bool] = lambda page: not not BS(
-            page, "lxml"
-        ).find("li", class_="search_result_img_box_inner")
-        # Save a file.
-        save_file: Callable[[str, str], None] = lambda source, filename: print(
-            source, file=open(os.path.join(self.save_dir, filename), "w")
-        )
 
         shutil.rmtree(self.save_dir, ignore_errors=True)
         os.makedirs(self.save_dir, exist_ok=True)
 
-        for pagenation, _ in enumerate(iter(int, 1)):
+        pagenation = 0
+        while True:
             pagenation += 1
-            filename = "{:05}.html".format(pagenation)
+            filename = f"{pagenation:05}.html"
             url = root.format(pagenation)
-            print("\33[2K\rnow: {}".format(filename), end="", flush=True)
-            fid = requests.get(url, headers=UA).text
-            if chk_work_exist(fid):
-                save_file(fid, filename)
+            print(f"\33[2K\rnow: {filename}", end="", flush=True)
+            page_source = requests.get(url, headers=UA).text
+            if self.__check_work(page_source):
+                self.__save_file(page_source, filename)
             else:
                 break
+
+    def __check_work(self, page: str) -> bool:
+        """Judge if articles exists in a source."""
+        bs = BS(page, "lxml")
+        return (
+            bs is not None
+            and bs.select_one("li[class=search_result_img_box_inner]") is not None
+        )
+
+    def __save_file(self, source: str, filename: str) -> None:
+        """Save a file."""
+        print(source, file=open(os.path.join(self.save_dir, filename), "w"))
 
     # def get_dmm_pages(self) -> None:
     #     root = 'https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/page={}'
