@@ -35,7 +35,7 @@ def main() -> None:
         targets = get_filepaths(site)
         print(len(targets), "lists of works is found!")
         for page_idx, path in enumerate(targets):
-            print("\33[2K\r\033[31mNow: {}\033[0m".format(path))
+            print(f"\033[2K\r\033[31mNow: {path}\033[0m")
             d = p.parse(path, page_idx)
             print(" =>committing to DB...", end="")
             db.push(cast(List[DlsiteDict], d))
