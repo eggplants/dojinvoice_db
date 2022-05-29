@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import shutil
-from typing import Callable
 
 import requests
 from bs4 import BeautifulSoup as BS
