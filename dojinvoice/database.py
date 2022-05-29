@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sqlite3 import Error, connect
 from sys import stderr
-from typing import Any, Callable
+from typing import Any
 
 from .parser import DlsiteDict
 
@@ -55,13 +55,13 @@ class DojinvoiceDatabase(object):
         conn.close()
         return res
 
+    def __create_table(self, schema: str) -> None:
+        self.__connect_db("create table " + schema)
+
     def create_tables(self) -> None:
         """Create the tables."""
-        create_table: Callable[[str], None] = lambda schema: self.__connect_db(
-            "create table " + schema
-        )
 
-        create_table(
+        self.__create_table(
             """work (
                     work_id text primary key,
                     detail_link text not null,
@@ -78,7 +78,7 @@ class DojinvoiceDatabase(object):
                     price integer not null
                 ) """
         )
-        create_table(
+        self.__create_table(
             """option (
                     work_id text primary key,
                     thumbnail text,
@@ -92,42 +92,42 @@ class DojinvoiceDatabase(object):
                     rating real
                 ) """
         )
-        create_table(
+        self.__create_table(
             """writer (
                     work_id text,
                     writer text,
                     primary key (work_id, writer)
                 ) """
         )
-        create_table(
+        self.__create_table(
             """scenario (
                     work_id text,
                     scenario text,
                     primary key (work_id, scenario)
                 ) """
         )
-        create_table(
+        self.__create_table(
             """illustrator (
                     work_id text,
                     illustrator text,
                     primary key (work_id, illustrator)
                 ) """
         )
-        create_table(
+        self.__create_table(
             """voice (
                     work_id text,
                     voice text,
                     primary key (work_id, voice)
                 ) """
         )
-        create_table(
+        self.__create_table(
             """musician (
                     work_id text,
                     musician text,
                     primary key (work_id, musician)
                 ) """
         )
-        create_table(
+        self.__create_table(
             """genre (
                     work_id text,
                     genre text,
