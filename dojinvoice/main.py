@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+from __future__ import annotations
 
 import os
 from glob import glob
-from typing import List, TypedDict
+from typing import List, cast
 
 from .database import DojinvoiceDatabase
 from .download import Download
@@ -11,48 +11,37 @@ from .parser import DlsiteDict, Parser
 # from .parser import DmmDict
 
 
-class DojinDict(TypedDict):
-    dlsite: List[DlsiteDict]
-    # dmm: List[DmmDict]
-
-
-def get_filepaths(dirpath: str) -> List[str]:
+def get_filepaths(dirpath: str) -> list[str]:
     """Get the file paths in the specified directory."""
-    return sorted(glob(os.path.join('.', dirpath, '*')))
+    return sorted(glob(os.path.join(".", dirpath, "*")))
 
 
 def main() -> None:
     """Main!!!"""
-    if input('Download pages? >> ') == 'y':
-        Download('dlsite').get_all_pages()
+    if input("Download pages? >> ") == "y":
+        Download("dlsite").get_all_pages()
         # download.Download('dmm').get_all_pages()
 
-    db = DojinvoiceDatabase('dojinvoice.db')
+    db = DojinvoiceDatabase("dojinvoice.db")
     db.create_tables()
 
-    exclude_ids: List[str] = db.get_work_ids()
+    exclude_ids: list[str] = db.get_work_ids()
     if len(exclude_ids) > 0:
-        print(len(exclude_ids), 'ids was committed to existed db!')
+        print(len(exclude_ids), "ids was committed to existed db!")
 
-    parsed_data: DojinDict = {
-        'dlsite': []
-        # 'dmm': []
-    }
-    for site in parsed_data.keys():
-        print('site:', site)
+    for site in ("dlsite",):
+        print("site:", site)
         p = Parser(site, exclude_ids)
         targets = get_filepaths(site)
-        print(len(targets), 'lists of works is found!')
+        print(len(targets), "lists of works is found!")
         for page_idx, path in enumerate(targets):
-            print('\33[2K\r\033[31mNow: {}\033[0m'.format(path))
+            print("\33[2K\r\033[31mNow: {}\033[0m".format(path))
             d = p.parse(path, page_idx)
-            parsed_data[site].extend(d)  # type: ignore
-            print(' =>committing to DB...', end='')
-            db.push(parsed_data['dlsite'])
-            parsed_data['dlsite'] = []
+            print(" =>committing to DB...", end="")
+            db.push(cast(List[DlsiteDict], d))
 
-        print('DONE:', site)
+        print("DONE:", site)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
