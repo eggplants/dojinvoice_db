@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import shutil
 from typing import Callable
@@ -6,47 +8,50 @@ import requests
 from bs4 import BeautifulSoup as BS
 
 UA = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_5) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) '
-    'Chrome/67.0.3396.99 Safari/537.36'}
+    "User-Agent": "Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_5) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/67.0.3396.99 Safari/537.36"
+}
 
 
 class Download(object):
     def __init__(self, site: str) -> None:
         """Init."""
         self.site = site
-        self.save_dir = os.path.join('.', self.site)
+        self.save_dir = os.path.join(".", self.site)
 
     def get_all_pages(self) -> None:
         """Get pages till a page without an article is shown."""
-        if self.site == 'dlsite':
+        if self.site == "dlsite":
             self.get_dlsite_pages()
         # elif self.site == 'dmm':
         #     self.get_dmm_pages()
 
     def get_dlsite_pages(self) -> None:
-        root = 'https://www.dlsite.com/maniax/fsr/=/language/jp/'\
-               'sex_category%5B0%5D/male/work_category%5B0%5D/doujin/'\
-               'order%5B0%5D/release_d/work_type%5B0%5D/SOU/'\
-               'work_type_name%5B0%5D/%E3%83%9C%E3%82%A4%E3%82%B9%E3%83%BBASMR/'\
-               'per_page/100/page/{}'
+        root = (
+            "https://www.dlsite.com/maniax/fsr/=/language/jp/"
+            "sex_category%5B0%5D/male/work_category%5B0%5D/doujin/"
+            "order%5B0%5D/release_d/work_type%5B0%5D/SOU/"
+            "work_type_name%5B0%5D/%E3%83%9C%E3%82%A4%E3%82%B9%E3%83%BBASMR/"
+            "per_page/100/page/{}"
+        )
         # Judge if articles exists in a source.
-        chk_work_exist: Callable[[str], bool] = lambda page:\
-            not not BS(page, "lxml").find(
-            'li', class_='search_result_img_box_inner')
+        chk_work_exist: Callable[[str], bool] = lambda page: not not BS(
+            page, "lxml"
+        ).find("li", class_="search_result_img_box_inner")
         # Save a file.
-        save_file: Callable[[str, str], None] = lambda source, filename:\
-            print(source,
-                  file=open(os.path.join(self.save_dir, filename), 'w'))
+        save_file: Callable[[str, str], None] = lambda source, filename: print(
+            source, file=open(os.path.join(self.save_dir, filename), "w")
+        )
 
         shutil.rmtree(self.save_dir, ignore_errors=True)
         os.makedirs(self.save_dir, exist_ok=True)
 
         for pagenation, _ in enumerate(iter(int, 1)):
             pagenation += 1
-            filename = '{:05}.html'.format(pagenation)
+            filename = "{:05}.html".format(pagenation)
             url = root.format(pagenation)
-            print('\33[2K\rnow: {}'.format(filename), end='', flush=True)
+            print("\33[2K\rnow: {}".format(filename), end="", flush=True)
             fid = requests.get(url, headers=UA).text
             if chk_work_exist(fid):
                 save_file(fid, filename)

@@ -1,5 +1,0 @@
-beautifulsoup4
-humanfriendly
-requests
-selenium
-types-requests

@@ -11,7 +11,10 @@
 ## 動かす
 
 ```bash
-$ pip install dojinvoice-db
+pip install dojinvoice-db
+```
+
+```shellsession
 $ dvdb
 Download pages? >> (`y` or Enter)
 <int> ids was committed to existed db!
