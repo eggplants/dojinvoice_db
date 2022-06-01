@@ -7,6 +7,7 @@ from random import uniform
 from time import sleep
 from typing import TypedDict, cast
 
+import pyderman
 from bs4 import BeautifulSoup as BS
 from bs4.element import Tag
 from humanfriendly import parse_size
@@ -87,6 +88,7 @@ class Parser(object):
         """Init."""
         self.site = site
         self.exclude_ids = exclude_ids
+
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
@@ -100,10 +102,16 @@ class Parser(object):
         options.add_argument("--user-agent={}".format(UA["User-Agent"]))
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
+
         print("Preparing for headless chrome...", end="", flush=True)
-        self.driver = webdriver.Chrome(options=options)
+
+        executable_path = pyderman.install(verbose=False)
+        self.driver = webdriver.Chrome(
+            executable_path=str(executable_path), options=options
+        )
         self.driver.set_page_load_timeout(60)
         self.driver.get("https://www.dlsite.com/maniax/work/=/product_id/RJ305341.html")
+
         WebDriverWait(self.driver, 15).until(
             expected_conditions.presence_of_element_located((By.CLASS_NAME, "btn_yes"))
         )
@@ -125,19 +133,20 @@ class Parser(object):
         res = []
         bs = BS(open(path, "r").read(), "lxml")
         work_links = [
-            str(li.get("href"))
-            for li in bs.select(
-                "li[class=search_result_img_box_inner] a[class=work_thumb_inner]"
-            )
-            if isinstance(li.get("href"), str)
+            str(a.get("href"))
+            for a in bs.select("a[class=work_thumb_inner]")
+            if isinstance(a.get("href"), str)
         ]
         thumb_links = [
-            str(li.get("src"))
-            for li in bs.select("li[class=search_result_img_box_inner] img[class=lazy]")
-            if isinstance(li.get("src"), str)
+            str(img.get("src") or img.get("data-src"))
+            for img in bs.select("img[class=lazy]")
+            if isinstance(img.get("src"), str) or isinstance(img.get("data-src"), str)
         ]
         if len(work_links) != len(thumb_links):
-            raise ValueError("number of works != number of thumbnails")
+            raise ValueError(
+                "number of works != number of thumbnails: "
+                f"({len(work_links)} != {len(thumb_links)})"
+            )
         for idx, (work_link, thumb_link) in enumerate(zip(work_links, thumb_links)):
             print(
                 "\33[2K\r{}: {}".format(100 * self.page_idx + idx + 1, work_link),
