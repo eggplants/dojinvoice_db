@@ -50,6 +50,7 @@ repos:
           - types-beautifulsoup4
           - types-selenium
           - types-humanfriendly
+          - pyderman
           # - ...
         files: ^dojinvoice/
         args: [--strict]
