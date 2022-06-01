@@ -10,7 +10,7 @@ from .parser import DlsiteDict
 
 
 class DojinvoiceDatabase(object):
-    def __init__(self, db_filepath: str, log: str = "log") -> None:
+    def __init__(self, db_filepath: str, log: str = ".log") -> None:
         """Init."""
         self.db_filepath = db_filepath
         self.log = open(log, "w")
