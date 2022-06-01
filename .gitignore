@@ -1,3 +1,8 @@
+dlsite/
+dmm/
+# dojinvoice.db
+log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
@@ -135,9 +140,3 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
-
-dlsite/
-dmm/
-a.html
-dojinvoice.db
-log
