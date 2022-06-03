@@ -1,6 +1,6 @@
 # dojinvoice_db
 
-[![Release Package](https://github.com/eggplants/dojinvoice_db/workflows/Release%20Package/badge.svg)](https://github.com/eggplants/dojinvoice_db/actions/runs/355419760) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/eggplants/dojinvoice_db/main.svg)](https://results.pre-commit.ci/latest/github/eggplants/dojinvoice_db/main)
+[![Release Package](https://github.com/eggplants/dojinvoice_db/workflows/Release%20Package/badge.svg)](https://github.com/eggplants/dojinvoice_db/actions/runs/355419760) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/eggplants/dojinvoice_db/main.svg)](https://results.pre-commit.ci/latest/github/eggplants/dojinvoice_db/main) [![Update DB](https://github.com/eggplants/dojinvoice_db/actions/workflows/update.yml/badge.svg)](https://github.com/eggplants/dojinvoice_db/actions/workflows/update.yml)
 
 [![PyPI version](https://badge.fury.io/py/dojinvoice-db.svg)](https://badge.fury.io/py/dojinvoice_db) [![Maintainability](https://api.codeclimate.com/v1/badges/f9942612576bc3a99dbd/maintainability)](https://codeclimate.com/github/eggplants/dojinvoice_db/maintainability) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
