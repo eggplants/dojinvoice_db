@@ -22,6 +22,6 @@ jobs:
         run: echo y | dvdb
       - name: Commit
         run: |
-        git add dojinvoice.db
-        git commit -m "update: $(date +%y%m%d)"
-        git push origin main
+          git add dojinvoice.db
+          git commit -m "update: $(date +%y%m%d)"
+          git push origin main
