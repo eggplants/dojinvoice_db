@@ -20,8 +20,13 @@ jobs:
         run: pip install .
       - name: Run
         run: echo y | dvdb
+      - name: Set date
+        run: echo '::set-output name=DATE::'"$(date +%y%m%d)"
+        id: date
       - name: Commit
-        run: |
-          git add dojinvoice.db
-          git commit -m "update: $(date +%y%m%d)"
-          git push origin main
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: "GitHub Action"
+          author_email: "action@github.com"
+          message: "update: ${{ steps.date.outputs.DATE }}"
+          add: dojinvoice.db
