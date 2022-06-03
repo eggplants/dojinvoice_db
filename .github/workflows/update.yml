@@ -1,0 +1,27 @@
+name: Update DB
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'Asia/Tokyo'
+    steps:
+      - uses: nschloe/action-cached-lfs-checkout@v1
+      - uses: actions/setup-python@v3
+        with:
+          cache: 'pip'
+          cache-dependency-path: setup.cfg
+      - name: Install
+        run: pip install .
+      - name: Run
+        run: echo y | dvdb
+      - name: Commit
+        run: |
+        git add dojinvoice.db
+        git commit -m "update: $(date +%y%m%d)"
+        git push origin main
