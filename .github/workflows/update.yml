@@ -16,6 +16,7 @@ jobs:
         with:
           cache: 'pip'
           cache-dependency-path: setup.cfg
+          python-version: "3.x"
       - name: Install
         run: pip install .
       - name: Run
