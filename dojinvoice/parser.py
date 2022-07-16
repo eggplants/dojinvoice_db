@@ -115,7 +115,7 @@ class Parser(object):
         WebDriverWait(self.driver, 15).until(
             expected_conditions.presence_of_element_located((By.CLASS_NAME, "btn_yes"))
         )
-        btn = self.driver.find_element_by_class_name("btn-approval")
+        btn = self.driver.find_element(By.CLASS_NAME, "btn-approval")
         if btn:
             btn.click()
 
