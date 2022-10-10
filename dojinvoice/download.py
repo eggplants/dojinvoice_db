@@ -13,7 +13,7 @@ UA = {
 }
 
 
-class Download(object):
+class Download:
     def __init__(self, site: str) -> None:
         """Init."""
         self.site = site
