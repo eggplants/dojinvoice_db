@@ -9,7 +9,7 @@ from .parser import DlsiteDict
 # DatasDict = List[Union[DlsiteDict, DmmDict]]
 
 
-class DojinvoiceDatabase(object):
+class DojinvoiceDatabase:
     def __init__(self, db_filepath: str, log: str = ".log") -> None:
         """Init."""
         self.db_filepath = db_filepath
