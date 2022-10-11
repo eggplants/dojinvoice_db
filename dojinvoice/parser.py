@@ -83,7 +83,7 @@ UA = {
 }
 
 
-class Parser(object):
+class Parser:
     def __init__(self, site: str, exclude_ids: list[str] = []) -> None:
         """Init."""
         self.site = site
@@ -131,7 +131,7 @@ class Parser(object):
 
     def __parse_dlsite_pages(self, path: str) -> list[DlsiteDict]:
         res = []
-        bs = BS(open(path, "r").read(), "lxml")
+        bs = BS(open(path).read(), "lxml")
         work_links = [
             str(a.get("href"))
             for a in bs.select("a[class=work_thumb_inner]")
