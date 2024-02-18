@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 from random import uniform
-from time import sleep
 from typing import TypedDict, cast
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
-from bs4.element import Tag
 from humanfriendly import parse_size
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from install_playwright import install
+from playwright.sync_api import sync_playwright
 
 
 class UnknownSiteError(Exception):
@@ -85,40 +83,72 @@ class Parser:
         self.site = site
         self.exclude_ids = exclude_ids
 
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-infobars")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-browser-side-navigation")
-        options.add_argument('--proxy-server="direct://"')
-        options.add_argument("--proxy-bypass-list=*")
-        options.add_argument('--remote-debugging-port=9222')
-        options.add_argument('--user-agent={UA["User-Agent"]}')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option("useAutomationExtension", False)  # noqa: FBT003
-
         print("Preparing for headless chrome...", end="", flush=True)  # noqa: T201
 
-        self.driver = webdriver.Chrome(options=options)
-        self.driver.set_window_size(485, 275)
-        self.driver.set_page_load_timeout(60)
-        self.driver.get("https://www.dlsite.com")
-        self.driver.add_cookie({"name": "locale", "value": "ja-jp"})
-        self.driver.add_cookie({"name": "adultchecked", "value": "1"})
-        self.driver.get("https://www.dlsite.com/maniax/work/=/product_id/RJ305341.html")
+        self.__setup()
+
+    def __setup(self) -> None:
+        self.playwright = sync_playwright().start()
+        install(self.playwright.chromium)
+        self.browser = self.playwright.chromium.launch(
+            headless=True,
+            args=[
+                "--disable-browser-side-navigation",
+                "--disable-dev-shm-usage",
+                "--disable-extensions",
+                "--disable-gpu",
+                "--disable-infobars",
+                "--no-sandbox",
+                "--no-zygote",
+                "--remote-debugging-port=9222",
+                "--single-process",
+                "--window-size=485,275",
+            ],
+        )
+        self.context = self.browser.new_context(user_agent=UA["User-Agent"])
+        self.page = self.context.new_page()
+        self.page.set_default_timeout(100000)  # 100s
+        self.page.route(
+            "**/*",
+            lambda route: (
+                route.abort()
+                if route.request.resource_type in ("image", "media", "font", "other")
+                else route.continue_()
+            ),
+        )
+
+        self.page.goto("https://www.dlsite.com")
+        self.context.add_cookies(
+            [
+                {
+                    "url": "https://www.dlsite.com",
+                    "name": "locale",
+                    "value": "ja-jp",
+                },
+                {
+                    "url": "https://www.dlsite.com",
+                    "name": "adultchecked",
+                    "value": "1",
+                },
+            ],
+        )
+
+    def __close(self) -> None:
+        self.page.close()
+        self.context.close()
+        self.browser.close()
+        self.playwright.stop()
 
     def parse(self, path: Path, page_idx: int = 0) -> list[DlsiteDict] | list[DmmDict]:
         """Extract required information from the page sources and scrape it."""
         self.page_idx = page_idx
         if self.site == "dlsite":
             return self.__parse_dlsite_pages(path)
-        raise UnknownSiteError("Unknown Site: %s" % self.site)
+        msg = f"Unknown Site: {self.site}"
+        raise UnknownSiteError(msg)
 
     def __parse_dlsite_pages(self, path: Path) -> list[DlsiteDict]:  # noqa: PLR0915
-        res = []
+        res: list[DlsiteDict] = []
         bs = BeautifulSoup(path.open().read(), "lxml")
         work_links = [
             str(a.get("href")) for a in bs.select("a[class=work_thumb_inner]") if isinstance(a.get("href"), str)
@@ -136,165 +166,152 @@ class Parser:
                 f"\33[2K\r{100 * self.page_idx + idx + 1}: {work_link}",
                 end="",
             )
-            o = urllib.parse.urlparse(work_link)
+            o = urlparse(work_link)
             work_id = Path(o.path).stem
             if self.exclude_ids and work_id in self.exclude_ids:
                 continue
-            data = cast("DlsiteDict", {})
 
-            for _ in range(5):
-                try:
-                    self.driver.get(work_link)
-                    break
-                except TimeoutException:
-                    pass
-            else:
-                raise ConnectionError
+            self.page.goto(work_link)
+            self.page.locator("div.work_right_info").wait_for()
 
-            bs = BeautifulSoup(self.driver.page_source, "lxml")
-            if bs is None:
-                continue
-
-            title = bs.select_one("h1[id=work_name]")
-            if title is None:
+            title_texts = self.page.locator("h1#work_name").all_text_contents()
+            if len(title_texts) != 1:
                 print("404 skipped:", work_link)  # noqa: T201
                 continue
 
+            data = cast("DlsiteDict", {})
             data["work_id"] = work_id
-
             data["detail_link"] = work_link
-            data["title"] = title.string if title.string is not None else ""
+            data["title"] = title_texts[0].strip()
 
-            data["thumbnail"] = f"https:{thumb_link}"
+            data["thumbnail"] = urlparse(thumb_link)._replace(scheme="https").geturl()
 
-            circle_elm = bs.select_one("span[class=maker_name] > a")
-            data["circle"] = circle_elm.string if circle_elm is not None and circle_elm.string else ""
+            data["circle"] = self.page.locator("span[class=maker_name]").all_text_contents()[0].strip()
 
-            circle_link_elm = bs.select_one("span[class=maker_name] a")
-            data["circle_link"] = str(circle_link_elm.get("href", "")) if circle_link_elm is not None else ""
-
-            cien_elm = bs.select_one("div[class=link_cien] a")
-            data["cien_link"] = str(cien_elm.get("href", "")) if cien_elm is not None else None
-
-            info_table = {
-                str(tr.th.string): tr.td
-                for tr in bs.select("table[id=work_outline] > tbody > tr")
-                if isinstance(tr, Tag)
-                and isinstance(tr.th, Tag)
-                and isinstance(tr.th.string, str)
-                and tr.td is not None
-            }
-
-            sale_date_elm = info_table["販売日"].select_one("a") if "販売日" in info_table else None
-            sale_date = (
-                str(sale_date_elm.string) if sale_date_elm is not None and sale_date_elm.string is not None else ""
+            circle_link_loc = self.page.locator("span[class=maker_name] a")
+            data["circle_link"] = (
+                (circle_link_loc.get_attribute("href") or "").strip() if circle_link_loc.count() == 1 else ""
             )
 
-            if "時" in sale_date:
+            cien_link_loc = self.page.locator("div[class=link_cien] a")
+            data["cien_link"] = (
+                (cien_link_loc.get_attribute("href") or "").strip() if cien_link_loc.count() == 1 else None
+            )
+
+            info_table = {
+                tr.locator("th").all_text_contents()[0]: tr.locator("td")
+                for tr in self.page.locator("table[id=work_outline] > tbody > tr").all()
+                if tr.locator("td").count() > 0
+            }
+
+            sale_date_text = info_table["販売日"].all_text_contents()[0] if "販売日" in info_table else ""
+            if "時" in sale_date_text:
                 data["sale_date"] = int(
-                    datetime.strptime(sale_date, "%Y年%m月%d日 %H時").astimezone(timezone.utc).timestamp(),
+                    datetime.strptime(sale_date_text, "%Y年%m月%d日 %H時").astimezone(timezone.utc).timestamp(),
                 )
             else:
                 data["sale_date"] = int(
-                    datetime.strptime(sale_date, "%Y年%m月%d日").astimezone(timezone.utc).timestamp(),
+                    datetime.strptime(sale_date_text, "%Y年%m月%d日").astimezone(timezone.utc).timestamp(),
                 )
 
-            category_elm = info_table["作品形式"].select_one("a") if "作品形式" in info_table else None
-            data["category"] = (
-                category_elm.string if category_elm is not None and category_elm.string is not None else ""
+            data["category"] = info_table["作品形式"].all_text_contents()[0].strip() if "作品形式" in info_table else ""
+
+            data["series"] = (
+                info_table["シリーズ名"].all_text_contents()[0].strip() if "シリーズ名" in info_table else None
             )
 
-            series_elm = info_table["シリーズ名"].select_one("a") if "シリーズ名" in info_table else None
-            data["series"] = series_elm.string if series_elm is not None and series_elm.string is not None else ""
-
             data["writers"] = (
-                [writer.string for writer in info_table["作者"].select("a") if writer.string is not None]
+                [writer.all_text_contents()[0].strip() for writer in info_table["作者"].locator("a").all()]
                 if "作者" in info_table
                 else None
             )
+
             data["scenarios"] = (
-                [scenario.string for scenario in info_table["シナリオ"].select("a") if scenario.string is not None]
+                [scenario.all_text_contents()[0].strip() for scenario in info_table["シナリオ"].locator("a").all()]
                 if "シナリオ" in info_table
                 else None
             )
+
             data["illustrators"] = (
                 [
-                    illustrators.string
-                    for illustrators in info_table["イラスト"].select("a")
-                    if illustrators.string is not None
+                    illustrator.all_text_contents()[0].strip()
+                    for illustrator in info_table["イラスト"].locator("a").all()
                 ]
                 if "イラスト" in info_table
                 else None
             )
-            data["voices"] = [_.string for _ in info_table["声優"].select("a")] if "声優" in info_table else None
-            data["musicians"] = [_.string for _ in info_table["音楽"].select("a")] if "音楽" in info_table else None
-            data["age_zone"] = ",".join(
-                [age_zone.string for age_zone in info_table["年齢指定"].select("span") if age_zone.string is not None],
+
+            data["voices"] = (
+                [voice.all_text_contents()[0].strip() for voice in info_table["声優"].locator("a").all()]
+                if "声優" in info_table
+                else None
             )
-            data["file_format"] = info_table["ファイル形式"].get_text()
+
+            data["musicians"] = (
+                [musician.all_text_contents()[0].strip() for musician in info_table["音楽"].locator("a").all()]
+                if "音楽" in info_table
+                else None
+            )
+
+            data["age_zone"] = ",".join(
+                [age_zone.all_text_contents()[0].strip() for age_zone in info_table["年齢指定"].locator("span").all()],
+            )
+            data["file_format"] = info_table["ファイル形式"].all_text_contents()[0].strip()
+
             data["genres"] = (
-                [genre.string for genre in info_table["ジャンル"].select("a") if genre.string is not None]
+                [genre.all_text_contents()[0].strip() for genre in info_table["ジャンル"].locator("a").all()]
                 if "ジャンル" in info_table
                 else None
             )
-            file_size_elm = info_table["ファイル容量"].select_one("div[class=main_genre]")
-            file_size = file_size_elm.string if file_size_elm is not None and file_size_elm.string is not None else ""
-            data["file_size"] = parse_size(file_size.replace("計", "").replace("総", ""))
 
-            trial_elm = bs.select_one("div[class*=trial_download] > ul > li")
-            data["trial_link"], data["trial_size"] = None, None
-            if trial_elm is not None:
-                trial_link_elm = trial_elm.select_one("a[class=btn_trial]")
-                data["trial_link"] = (
-                    f"https:{trial_link_elm.get('href')}"
-                    if trial_link_elm is not None and isinstance(trial_link_elm.get("href"), str)
-                    else None
-                )
-                trial_size_elm = trial_elm.select_one("span")
-                data["trial_size"] = (
-                    parse_size(trial_size_elm.string.replace("(", "").replace(")", ""))
-                    if trial_size_elm is not None and trial_size_elm.string is not None
-                    else None
-                )
+            file_size_text = info_table["ファイル容量"].locator("div[class=main_genre]").all_text_contents()[0]
+            data["file_size"] = parse_size(file_size_text.replace("計", "").replace("総", "").strip())
 
-            description_elm = bs.select_one("div[itemprop=description]")
-            data["description"] = description_elm.get_text() if description_elm is not None else ""
+            trial_loc = self.page.locator("div[class*=trial_download] > ul > li")
 
-            data["monopoly"] = bs.select_one("span[title=DLsite専売]") is not None
-
-            rate_elm = bs.select_one("span[class='point average_count']")
-            data["rating"] = float(rate_elm.string) if rate_elm is not None and rate_elm.string is not None else None
-
-            sales_elm = bs.select_one("dd[class=point]")
-            data["sales"] = (
-                int(sales_elm.string.replace(",", ""))
-                if sales_elm is not None and sales_elm.string is not None
+            trial_link_loc = trial_loc.locator("a[class=btn_trial]")
+            data["trial_link"] = (
+                urlparse(str(trial_link_loc.get_attribute("href") or ""))._replace(scheme="https").geturl()
+                if trial_link_loc.count() == 1
                 else None
             )
 
-            favorites_elm = bs.select_one("dd[class=position_fix]")
-            data["favorites"] = (
-                int(favorites_elm.string.replace(",", ""))
-                if favorites_elm is not None and favorites_elm.string is not None
+            trial_size_texts = trial_loc.locator("span").all_text_contents()
+            data["trial_size"] = (
+                parse_size(trial_size_texts[0].replace("(", "").replace(")", ""))
+                if len(trial_size_texts) == 1
                 else None
             )
 
-            price_elm = bs.select_one("span[class=price]")
+            description_texts = self.page.locator("div[itemprop=description]").all_text_contents()
+            data["description"] = "".join(description_texts)
+
+            data["monopoly"] = self.page.locator("span[title=DLsite専売]").count() == 1
+
+            rating_texts = self.page.locator("span[class='point average_count']").all_text_contents()
+            data["rating"] = float(rating_texts[0].strip()) if len(rating_texts) == 1 else None
+            sales_texts = self.page.locator("dd[class=point]").all_text_contents()
+            data["sales"] = int(sales_texts[0].replace(",", "").strip()) if len(sales_texts) == 1 else None
+
+            favorites_texts = self.page.locator("dd[class=position_fix]").all_text_contents()
+            data["favorites"] = int(favorites_texts[0].replace(",", "").strip()) if len(favorites_texts) == 1 else None
+
+            price_texts = self.page.locator("span[class=price]").all_text_contents()
             data["price"] = (
-                int(price_elm.text.replace(",", "").replace("円", ""))
-                if price_elm is not None and price_elm.string is not None
-                else 0
+                int(price_texts[0].replace(",", "").replace("円", "").strip()) if len(price_texts) == 1 else 0
             )
 
-            chobit_elm = bs.select_one("div[class='work_parts type_chobit']>iframe")
-            data["chobit_link"] = (
-                str(chobit_elm.get("src"))
-                if chobit_elm is not None and isinstance(chobit_elm.get("src"), str)
-                else None
-            )
+            if data["price"] == 0:
+                price_texts = self.page.locator("div[class=work_buy_content]").all_text_contents()
+                data["price"] = (
+                    int(price_texts[0].replace(",", "").replace("円", "").strip()) if len(price_texts) == 1 else 0
+                )
+
+            chobit_link_loc = self.page.locator("div[class='work_parts type_chobit'] > iframe")
+            data["chobit_link"] = chobit_link_loc.get_attribute("src") if chobit_link_loc.count() == 1 else None
 
             # wait some to avoid page crash
-            sleep(3 + uniform(0.1, 1.0))  # noqa: S311
+            self.page.wait_for_timeout(uniform(100, 1000))  # noqa: S311
 
             # debug
             # breakpoint()  # noqa: ERA001
