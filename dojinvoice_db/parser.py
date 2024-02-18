@@ -89,19 +89,21 @@ class Parser:
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-extensions")
+        options.add_argument("--no-sandbox")
         options.add_argument("--disable-infobars")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-browser-side-navigation")
         options.add_argument('--proxy-server="direct://"')
         options.add_argument("--proxy-bypass-list=*")
-        options.add_argument("--start-maximized")
-        options.add_argument("--user-agent={}".format(UA["User-Agent"]))
+        options.add_argument('--remote-debugging-port=9222')
+        options.add_argument('--user-agent={UA["User-Agent"]}')
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)  # noqa: FBT003
 
         print("Preparing for headless chrome...", end="", flush=True)  # noqa: T201
 
         self.driver = webdriver.Chrome(options=options)
+        self.driver.set_window_size(485, 275)
         self.driver.set_page_load_timeout(60)
         self.driver.get("https://www.dlsite.com")
         self.driver.add_cookie({"name": "locale", "value": "ja-jp"})
@@ -152,6 +154,7 @@ class Parser:
             bs = BeautifulSoup(self.driver.page_source, "lxml")
             if bs is None:
                 continue
+
             title = bs.select_one("h1[id=work_name]")
             if title is None:
                 print("404 skipped:", work_link)  # noqa: T201
@@ -276,7 +279,7 @@ class Parser:
                 else None
             )
 
-            price_elm = bs.select_one("div[class=price]")
+            price_elm = bs.select_one("span[class=price]")
             data["price"] = (
                 int(price_elm.text.replace(",", "").replace("円", ""))
                 if price_elm is not None and price_elm.string is not None
@@ -290,8 +293,10 @@ class Parser:
                 else None
             )
 
-            sleep(uniform(0.1, 1.0))  # noqa: S311
+            # wait some to avoid page crash
+            sleep(3 + uniform(0.1, 1.0))  # noqa: S311
 
+            # debug
             # breakpoint()  # noqa: ERA001
 
             res.append(data)

@@ -24,7 +24,7 @@ def main() -> None:
 
     exclude_ids: list[str] = db.get_work_ids()
     if len(exclude_ids) > 0:
-        print(len(exclude_ids), "ids was committed to existed db!")  # noqa: T201
+        print(len(exclude_ids), "work(s) have already been committed to existing db!")  # noqa: T201
 
     for site in ("dlsite",):
         print("site:", site)  # noqa: T201
