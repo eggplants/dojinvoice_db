@@ -1,0 +1,45 @@
+{
+  "name": "Python",
+  "dockerFile": "Dockerfile",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "latest",
+      "installTools": false,
+      "installJupyterlab": false,
+      "toolsToInstall": "black,mypy"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+    "ghcr.io/devcontainers-contrib/features/shfmt:1": {},
+    "ghcr.io/dhoeric/features/hadolint:1": {}
+  },
+  "postCreateCommand": "sh .devcontainer/postCreateCommand.sh",
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "charliermarsh.ruff",
+        "exiasr.hadolint",
+        "foxundermoon.shell-format",
+        "GitHub.copilot",
+        "GitHub.vscode-github-actions",
+        "Gruntfuggly.todo-tree",
+        "ms-azuretools.vscode-docker",
+        "ms-python.black-formatter",
+        "ms-python.mypy-type-checker",
+        "oderwat.indent-rainbow",
+        "tamasfe.even-better-toml",
+        "tekumara.typos-vscode",
+        "timonwong.shellcheck"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "shellformat.flag": "-s -l -i 2",
+        "[python]": {
+          "editor.formatOnSave": true
+        }
+      }
+    }
+  }
+}

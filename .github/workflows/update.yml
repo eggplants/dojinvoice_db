@@ -2,32 +2,32 @@ name: Update DB
 
 on:
   schedule:
-    - cron: "0 15 * * *"
+  - cron: 0 15 * * *
   workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
     env:
-      TZ: 'Asia/Tokyo'
+      TZ: Asia/Tokyo
     steps:
-      - uses: nschloe/action-cached-lfs-checkout@v1
-      - uses: actions/setup-python@v4
-        with:
-          cache: 'pip'
-          cache-dependency-path: setup.cfg
-          python-version: "3.x"
-      - name: Install
-        run: pip install .
-      - name: Run
-        run: echo y | dvdb
-      - name: Set date
-        run: echo '::set-output name=DATE::'"$(date +%y%m%d)"
-        id: date
-      - name: Commit
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: "GitHub Action"
-          author_email: "action@github.com"
-          message: "update: ${{ steps.date.outputs.DATE }}"
-          add: dojinvoice.db
+    - uses: nschloe/action-cached-lfs-checkout@v1
+    - uses: actions/setup-python@v4
+      with:
+        cache: pip
+        cache-dependency-path: setup.cfg
+        python-version: 3.x
+    - name: Install
+      run: pip install .
+    - name: Run
+      run: echo y | dvdb
+    - name: Set date
+      run: echo '::set-output name=DATE::'"$(date +%y%m%d)"
+      id: date
+    - name: Commit
+      uses: EndBug/add-and-commit@v9
+      with:
+        author_name: GitHub Action
+        author_email: action@github.com
+        message: 'update: ${{ steps.date.outputs.DATE }}'
+        add: dojinvoice.db

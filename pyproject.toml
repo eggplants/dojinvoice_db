@@ -1,0 +1,89 @@
+# poetry self add poetry-bumpversion
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool]
+[tool.poetry]
+authors = ["eggplants <w10776e8w@yahoo.co.jp>"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+description = "Make DB of Dojinvoice"
+keywords = ["selenium", "dlsite"]
+name = "dojinvoice_db"
+packages = [{ include = "dojinvoice_db" }]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/eggplants/dojinvoice_db"
+version = "0.7.0"
+
+[tool.poetry.dependencies]
+python = ">3.9.7,<3.13"
+beautifulsoup4 = "^4.12.3"
+humanfriendly = "^10.0"
+lxml = "^5.1.0"
+requests = "^2.31.0"
+selenium = "^4.17.2"
+types-requests = "^2.31.0.20240125"
+types-beautifulsoup4 = "^4.12.0.20240106"
+types-humanfriendly = "^10.0.1.11"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.1.1"
+pre-commit = ">=2.20,<4.0"
+taskipy = "^1.10.3"
+pytest = "^8.0.0"
+pytest-cov = "^4.1.0"
+
+[tool.poetry.scripts]
+dvdb = "dojinvoice_db.main:main"
+
+[tool.black]
+line-length = 120
+target-version = ['py39']
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D", "D203", "D213", "ANN101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_*.py" = [
+  "INP001", #  Add an `__init__.py`.
+  "S101",   #    Use of assert detected
+]
+"scripts/*.py" = [
+  "D",
+  "INP001", #  Add an `__init__.py`.
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 18
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+pretty = true
+python_version = "3.9"
+show_error_codes = true
+strict = true
+
+[tool.poetry_bumpversion.file."dojinvoice_db/__init__.py"]
+
+[tool.taskipy.tasks]
+test = "pytest --cov=dojinvoice_db --cov-report=term"
+"test:ci" = "task test --cov-report=xml:cov.xml"
+lint = "pre-commit run -a"
+profile = "python -m cProfile"
