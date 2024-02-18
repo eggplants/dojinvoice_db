@@ -4,29 +4,30 @@
 
 [![PyPI version](https://badge.fury.io/py/dojinvoice-db.svg)](https://badge.fury.io/py/dojinvoice_db) [![Maintainability](https://api.codeclimate.com/v1/badges/f9942612576bc3a99dbd/maintainability)](https://codeclimate.com/github/eggplants/dojinvoice_db/maintainability) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
-- 同人音声 DB
+- Dojinvoice (同人音声) DB
   - DLsite
     - <https://www.dlsite.com/maniax/works/voice>
 
-## 動かす
+## How to run
+
+[`git-lfs`](https://github.com/git-lfs/git-lfs?tab=readme-ov-file#installing) required to download existing data from the storage.
 
 ```bash
 pip install dojinvoice-db
+git lfs pull
 ```
 
 ```shellsession
 $ dvdb
 Download pages? >> (`y` or Enter)
-<int> ids was committed to existed db!
+<int> work(s) have already been committed to existing db!
 Now: ./dlsite/00001.html
 Now: ./dlsite/00002.html
 Now: ./dlsite/00003.html
 ...
 ```
 
-注意: _DB を一から構築するとかなり時間がかかります. 構築済DBは[Releases](https://github.com/eggplants/dojinvoice_db/releases)から_
-
-## スキーマ
+## DB Schema
 
 ```python
 create_table(
