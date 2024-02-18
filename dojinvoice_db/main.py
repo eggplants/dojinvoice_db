@@ -1,46 +1,43 @@
 from __future__ import annotations
 
-import os
-from glob import glob
+from pathlib import Path
 from typing import List, cast
 
 from .database import DojinvoiceDatabase
 from .download import Download
 from .parser import DlsiteDict, Parser
 
-# from .parser import DmmDict
 
-
-def get_filepaths(dirpath: str) -> list[str]:
+def get_filepaths(dirpath: str) -> list[Path]:
     """Get the file paths in the specified directory."""
-    return sorted(glob(os.path.join(".", dirpath, "*")))
+    path = Path.cwd() / dirpath
+    return sorted(path.glob("*"))
 
 
 def main() -> None:
     """Main!!!"""
     if input("Download pages? >> ") == "y":
         Download("dlsite").get_all_pages()
-        # download.Download('dmm').get_all_pages()
 
     db = DojinvoiceDatabase("dojinvoice.db")
     db.create_tables()
 
     exclude_ids: list[str] = db.get_work_ids()
     if len(exclude_ids) > 0:
-        print(len(exclude_ids), "ids was committed to existed db!")
+        print(len(exclude_ids), "ids was committed to existed db!")  # noqa: T201
 
     for site in ("dlsite",):
-        print("site:", site)
+        print("site:", site)  # noqa: T201
         p = Parser(site, exclude_ids)
         targets = get_filepaths(site)
-        print(len(targets), "lists of works is found!")
+        print(len(targets), "lists of works is found!")  # noqa: T201
         for page_idx, path in enumerate(targets):
-            print(f"\033[2K\r\033[31mNow: {path}\033[0m")
+            print(f"\033[2K\r\033[31mNow: {path}\033[0m")  # noqa: T201
             d = p.parse(path, page_idx)
-            print(" =>committing to DB...", end="")
+            print(" =>committing to DB...", end="")  # noqa: T201
             db.push(cast(List[DlsiteDict], d))
 
-        print("DONE:", site)
+        print("DONE:", site)  # noqa: T201
 
 
 if __name__ == "__main__":
