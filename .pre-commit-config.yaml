@@ -45,7 +45,8 @@ repos:
     args:
     - --strict
     additional_dependencies:
-    - selenium
+    - playwright
+    - install-playwright
     - types-beautifulsoup4
     - types-humanfriendly
     - types-requests
