@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import List, cast
 
@@ -33,7 +34,7 @@ def main() -> None:
         print(len(targets), "lists of works is found!")  # noqa: T201
         for page_idx, path in enumerate(targets):
             print(f"\033[2K\r\033[31mNow: {path}\033[0m")  # noqa: T201
-            d = p.parse(path, page_idx)
+            d = asyncio.run(p.parse(path, page_idx))
             print(" =>committing to DB...", end="")  # noqa: T201
             db.push(cast(List[DlsiteDict], d))
 
