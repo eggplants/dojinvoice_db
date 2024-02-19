@@ -31,13 +31,26 @@
         "oderwat.indent-rainbow",
         "tamasfe.even-better-toml",
         "tekumara.typos-vscode",
-        "timonwong.shellcheck"
+        "timonwong.shellcheck",
+        "vscode.json-language-features",
+        "-ms-python.vscode-pylance"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
         "shellformat.flag": "-s -l -i 2",
+        "[dockerfile]": {
+          "editor.defaultFormatter": "foxundermoon.shell-format"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "vscode.json-language-features"
+        },
         "[python]": {
-          "editor.formatOnSave": true
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+          }
         }
       }
     }
