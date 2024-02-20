@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -84,7 +85,7 @@ class Parser:
     def __init__(self, site: str, exclude_ids: list[str] | None = None) -> None:
         """Init."""
         self.site = site
-        self.exclude_ids = exclude_ids
+        self.exclude_ids = exclude_ids or []
 
     async def parse(self, path: Path, page_idx: int = 0) -> list[DlsiteDict] | list[DmmDict]:
         """Extract required information from the page sources and scrape it."""
@@ -97,18 +98,22 @@ class Parser:
 
     async def __parse_dlsite_pages(self, path: Path) -> list[DlsiteDict]:  # noqa: PLR0915
         res: list[DlsiteDict] = []
-        work_links, thumb_links = self.__parse_dlsite_work_lists(path)
+        data = [
+          (work_id, work_link, thumb_link)
+          for work_link, thumb_link in zip(*self.__parse_dlsite_work_lists(path))
+          if (work_id := Path(urlparse(work_link).path).stem) not in self.exclude_ids
+        ]
+        if len(data) == 0:
+          return res
 
         async with async_playwright() as playwright:
             await self.__setup(playwright)
-            for idx, (work_link, thumb_link) in enumerate(zip(work_links, thumb_links)):
+
+            for idx, (work_id, work_link, thumb_link) in enumerate(data):
                 print(  # noqa: T201
                     f"\33[2K\r{100 * self.page_idx + idx + 1}: {work_link}",
                     end="",
                 )
-                work_id = Path(urlparse(work_link).path).stem
-                if self.exclude_ids and work_id in self.exclude_ids:
-                    continue
 
                 for time in range(5):
                     try:
@@ -324,13 +329,13 @@ class Parser:
                 "--disable-infobars",
                 "--no-sandbox",
                 "--no-zygote",
-                # "--single-process",
+                "--single-process",
                 "--window-size=485,275",
             ],
         )
         self.context: BrowserContext = await self.browser.new_context(user_agent=UA["User-Agent"])
         self.page = await self.context.new_page()
-        self.page.set_default_timeout(10000)  # 10s
+        self.page.set_default_timeout(60 * 1000)
         await self.page.route(
             "**/*",
             lambda route: (
@@ -356,6 +361,14 @@ class Parser:
             ],
         )
 
+    async def __close(self) -> None:
+        with contextlib.suppress(TargetClosedError):
+            await self.page.close()
+        with contextlib.suppress(TargetClosedError):
+            await self.context.close()
+        with contextlib.suppress(TargetClosedError):
+            await self.browser.close()
+
     @staticmethod
     def __parse_dlsite_work_lists(path: Path) -> tuple[list[str], list[str]]:
         bs = BeautifulSoup(path.open().read(), "lxml")
@@ -372,8 +385,3 @@ class Parser:
             raise ValueError(msg)
 
         return work_links, thumb_links
-
-    async def __close(self) -> None:
-        await self.page.close()
-        await self.context.close()
-        await self.browser.close()
