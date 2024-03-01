@@ -99,12 +99,12 @@ class Parser:
     async def __parse_dlsite_pages(self, path: Path) -> list[DlsiteDict]:  # noqa: PLR0915
         res: list[DlsiteDict] = []
         data = [
-          (work_id, work_link, thumb_link)
-          for work_link, thumb_link in zip(*self.__parse_dlsite_work_lists(path))
-          if (work_id := Path(urlparse(work_link).path).stem) not in self.exclude_ids
+            (work_id, work_link, thumb_link)
+            for work_link, thumb_link in zip(*self.__parse_dlsite_work_lists(path))
+            if (work_id := Path(urlparse(work_link).path).stem) not in self.exclude_ids
         ]
         if len(data) == 0:
-          return res
+            return res
 
         async with async_playwright() as playwright:
             await self.__setup(playwright)
