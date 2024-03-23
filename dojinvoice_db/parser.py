@@ -96,20 +96,20 @@ class Parser:
         msg = f"Unknown Site: {self.site}"
         raise UnknownSiteError(msg)
 
-    async def __parse_dlsite_pages(self, path: Path) -> list[DlsiteDict]:  # noqa: PLR0915
+    async def __parse_dlsite_pages(self, path: Path) -> list[DlsiteDict]:
         res: list[DlsiteDict] = []
-        data = [
-          (work_id, work_link, thumb_link)
-          for work_link, thumb_link in zip(*self.__parse_dlsite_work_lists(path))
-          if (work_id := Path(urlparse(work_link).path).stem) not in self.exclude_ids
+        work_page_data = [
+            (work_id, work_link, thumb_link)
+            for work_link, thumb_link in zip(*self.__parse_dlsite_work_lists(path))
+            if (work_id := Path(urlparse(work_link).path).stem) not in self.exclude_ids
         ]
-        if len(data) == 0:
-          return res
+        if len(work_page_data) == 0:
+            return res
 
         async with async_playwright() as playwright:
             await self.__setup(playwright)
 
-            for idx, (work_id, work_link, thumb_link) in enumerate(data):
+            for idx, (work_id, work_link, thumb_link) in enumerate(work_page_data):
                 print(  # noqa: T201
                     f"\33[2K\r{100 * self.page_idx + idx + 1}: {work_link}",
                     end="",
@@ -129,191 +129,196 @@ class Parser:
 
                 await self.page.locator("div.work_right_info").wait_for()
 
-                title_texts = await self.page.locator("h1#work_name").all_text_contents()
-                if len(title_texts) != 1:
-                    print("404 skipped:", work_link)  # noqa: T201
-                    continue
-
-                data = cast("DlsiteDict", {})
-                data["work_id"] = work_id
-                data["detail_link"] = work_link
-                data["title"] = title_texts[0].strip()
-                data["thumbnail"] = urlparse(thumb_link)._replace(scheme="https").geturl()
-
-                circle_texts = await self.page.locator("span[class=maker_name]").all_text_contents()
-                data["circle"] = circle_texts[0].strip()
-
-                circle_link_loc = self.page.locator("span[class=maker_name] a")
-                data["circle_link"] = None
-                if await circle_link_loc.count() == 1:
-                    data["circle_link"] = (await circle_link_loc.get_attribute("href") or "").strip()
-
-                cien_link_loc = self.page.locator("div[class=link_cien] a")
-                data["cien_link"] = None
-                if await cien_link_loc.count() == 1:
-                    data["cien_link"] = (await cien_link_loc.get_attribute("href") or "").strip()
-
-                info_table = {
-                    (await tr.locator("th").all_text_contents())[0]: tr.locator("td")
-                    for tr in await self.page.locator("table[id=work_outline] > tbody > tr").all()
-                    if await tr.locator("td").count() > 0
-                }
-
-                sale_date_text = (await info_table["販売日"].all_text_contents())[0].strip()
-                if "時" in sale_date_text:
-                    data["sale_date"] = int(
-                        datetime.strptime(sale_date_text, "%Y年%m月%d日 %H時").astimezone(timezone.utc).timestamp(),
-                    )
-                else:
-                    data["sale_date"] = int(
-                        datetime.strptime(sale_date_text, "%Y年%m月%d日").astimezone(timezone.utc).timestamp(),
-                    )
-
-                data["category"] = (await info_table["作品形式"].all_text_contents())[0].strip()
-
-                sales_texts = await info_table["シリーズ名"].all_text_contents() if "シリーズ名" in info_table else ()
-                data["series"] = sales_texts[0].strip() if len(sales_texts) == 1 else None
-
-                data["writers"] = (
-                    [
-                        (await writer.all_text_contents())[0].strip()
-                        for writer in await info_table["作者"].locator("a").all()
-                    ]
-                    if "作者" in info_table
-                    else None
-                )
-
-                data["scenarios"] = (
-                    [
-                        (await scenario.all_text_contents())[0].strip()
-                        for scenario in await info_table["シナリオ"].locator("a").all()
-                    ]
-                    if "シナリオ" in info_table
-                    else None
-                )
-
-                data["illustrators"] = (
-                    [
-                        (await illustrator.all_text_contents())[0].strip()
-                        for illustrator in await info_table["イラスト"].locator("a").all()
-                    ]
-                    if "イラスト" in info_table
-                    else None
-                )
-
-                data["voices"] = (
-                    [
-                        (await voice.all_text_contents())[0].strip()
-                        for voice in await info_table["声優"].locator("a").all()
-                    ]
-                    if "声優" in info_table
-                    else None
-                )
-
-                data["musicians"] = (
-                    [
-                        (await musician.all_text_contents())[0].strip()
-                        for musician in await info_table["音楽"].locator("a").all()
-                    ]
-                    if "音楽" in info_table
-                    else None
-                )
-
-                data["age_zone"] = ",".join(
-                    [
-                        (await age_zone.all_text_contents())[0].strip()
-                        for age_zone in await info_table["年齢指定"].locator("span").all()
-                    ],
-                )
-                data["file_format"] = (await info_table["ファイル形式"].all_text_contents())[0].strip()
-
-                data["genres"] = (
-                    [
-                        (await genre.all_text_contents())[0].strip()
-                        for genre in await info_table["ジャンル"].locator("a").all()
-                    ]
-                    if "ジャンル" in info_table
-                    else None
-                )
-
-                file_size_texts = await info_table["ファイル容量"].locator("div[class=main_genre]").all_text_contents()
-                data["file_size"] = parse_size(file_size_texts[0].replace("計", "").replace("総", "").strip())
-
-                trial_loc = self.page.locator("div[class*=trial_download] > ul > li")
-
-                trial_link_loc = trial_loc.locator("a[class=btn_trial]")
-                data["trial_link"] = (
-                    urlparse(await trial_link_loc.get_attribute("href") or "")._replace(scheme="https").geturl()
-                    if await trial_link_loc.count() == 1
-                    else None
-                )
-
-                trial_size_texts = await trial_loc.locator("span").all_text_contents()
-                data["trial_size"] = (
-                    parse_size(trial_size_texts[0].replace("(", "").replace(")", ""))
-                    if len(trial_size_texts) == 1
-                    else None
-                )
-
-                description_texts = await self.page.locator("div[itemprop=description]").all_text_contents()
-                data["description"] = "".join(description_texts)
-
-                data["monopoly"] = await self.page.locator("span[title=DLsite専売]").count() == 1
-
-                rating_texts = await self.page.locator("span[class='point average_count']").all_text_contents()
-                data["rating"] = float(rating_texts[0].strip()) if len(rating_texts) == 1 else None
-
-                sales_texts = await self.page.locator("dd[class=point]").all_text_contents()
-                data["sales"] = (
-                    int(
-                        sales_texts[0].replace(",", "").strip(),
-                    )
-                    if len(sales_texts) == 1
-                    else None
-                )
-
-                favorites_texts = await self.page.locator("dd[class=position_fix]").all_text_contents()
-                data["favorites"] = (
-                    int(
-                        favorites_texts[0].replace(",", "").strip(),
-                    )
-                    if len(favorites_texts) == 1
-                    else None
-                )
-
-                price_texts = await self.page.locator("span[class=price]").all_text_contents()
-                data["price"] = (
-                    int(
-                        price_texts[0].replace(",", "").replace("円", "").strip(),
-                    )
-                    if len(price_texts) == 1
-                    else 0
-                )
-                if data["price"] == 0:
-                    price_texts = await self.page.locator("div[class=work_buy_content]").all_text_contents()
-                    data["price"] = (
-                        int(
-                            price_texts[0].replace(",", "").replace("円", "").strip(),
-                        )
-                        if len(price_texts) == 1
-                        else 0
-                    )
-
-                chobit_link_loc = self.page.locator("div[class='work_parts type_chobit'] > iframe")
-                data["chobit_link"] = None
-                if await chobit_link_loc.count() == 1:
-                    data["chobit_link"] = await chobit_link_loc.get_attribute("src")
-
                 # wait some to avoid page crash
                 await self.page.wait_for_timeout(uniform(100, 1000))  # noqa: S311
 
-                # debug
-                # breakpoint()  # noqa: ERA001
+                page_data = await self.__extract_page_data(
+                    work_id,
+                    work_link,
+                    thumb_link,
+                )
+                if page_data:
+                    res.append(page_data)
 
-                res.append(data)
             await self.__close()
 
         return res
+
+    async def __extract_page_data(  # noqa: PLR0915
+        self,
+        work_id: str,
+        work_link: str,
+        thumb_link: str,
+    ) -> DlsiteDict | None:
+        data = cast(DlsiteDict, {})
+
+        title_texts = await self.page.locator("h1#work_name").all_text_contents()
+        if len(title_texts) != 1:
+            print("404 skipped:", work_link)  # noqa: T201
+            return None
+
+        data["work_id"] = work_id
+        data["detail_link"] = work_link
+        data["title"] = title_texts[0].strip()
+        data["thumbnail"] = urlparse(thumb_link)._replace(scheme="https").geturl()
+
+        circle_texts = await self.page.locator("span[class=maker_name]").all_text_contents()
+        data["circle"] = circle_texts[0].strip()
+
+        circle_link_loc = self.page.locator("span[class=maker_name] a")
+        data["circle_link"] = None
+        if await circle_link_loc.count() == 1:
+            data["circle_link"] = (await circle_link_loc.get_attribute("href") or "").strip()
+
+        cien_link_loc = self.page.locator("div[class=link_cien] a")
+        data["cien_link"] = None
+        if await cien_link_loc.count() == 1:
+            data["cien_link"] = (await cien_link_loc.get_attribute("href") or "").strip()
+
+        info_table = {
+            (await tr.locator("th").all_text_contents())[0]: tr.locator("td")
+            for tr in await self.page.locator("table[id=work_outline] > tbody > tr").all()
+            if await tr.locator("td").count() > 0
+        }
+
+        sale_date_text = (await info_table["販売日"].all_text_contents())[0].strip()
+        if "時" in sale_date_text:
+            data["sale_date"] = int(
+                datetime.strptime(sale_date_text, "%Y年%m月%d日 %H時").astimezone(timezone.utc).timestamp(),
+            )
+        else:
+            data["sale_date"] = int(
+                datetime.strptime(sale_date_text, "%Y年%m月%d日").astimezone(timezone.utc).timestamp(),
+            )
+
+        data["category"] = (await info_table["作品形式"].all_text_contents())[0].strip()
+
+        sales_texts = await info_table["シリーズ名"].all_text_contents() if "シリーズ名" in info_table else ()
+        data["series"] = sales_texts[0].strip() if len(sales_texts) == 1 else None
+
+        data["writers"] = (
+            [(await writer.all_text_contents())[0].strip() for writer in await info_table["作者"].locator("a").all()]
+            if "作者" in info_table
+            else None
+        )
+
+        data["scenarios"] = (
+            [
+                (await scenario.all_text_contents())[0].strip()
+                for scenario in await info_table["シナリオ"].locator("a").all()
+            ]
+            if "シナリオ" in info_table
+            else None
+        )
+
+        data["illustrators"] = (
+            [
+                (await illustrator.all_text_contents())[0].strip()
+                for illustrator in await info_table["イラスト"].locator("a").all()
+            ]
+            if "イラスト" in info_table
+            else None
+        )
+
+        data["voices"] = (
+            [(await voice.all_text_contents())[0].strip() for voice in await info_table["声優"].locator("a").all()]
+            if "声優" in info_table
+            else None
+        )
+
+        data["musicians"] = (
+            [
+                (await musician.all_text_contents())[0].strip()
+                for musician in await info_table["音楽"].locator("a").all()
+            ]
+            if "音楽" in info_table
+            else None
+        )
+
+        data["age_zone"] = ",".join(
+            [
+                (await age_zone.all_text_contents())[0].strip()
+                for age_zone in await info_table["年齢指定"].locator("span").all()
+            ],
+        )
+        data["file_format"] = (await info_table["ファイル形式"].all_text_contents())[0].strip()
+
+        data["genres"] = (
+            [(await genre.all_text_contents())[0].strip() for genre in await info_table["ジャンル"].locator("a").all()]
+            if "ジャンル" in info_table
+            else None
+        )
+
+        file_size_texts = await info_table["ファイル容量"].locator("div[class=main_genre]").all_text_contents()
+        data["file_size"] = parse_size(file_size_texts[0].replace("計", "").replace("総", "").strip())
+
+        trial_loc = self.page.locator("div[class*=trial_download] > ul > li")
+
+        trial_link_loc = trial_loc.locator("a[class=btn_trial]")
+        data["trial_link"] = (
+            urlparse(await trial_link_loc.get_attribute("href") or "")._replace(scheme="https").geturl()
+            if await trial_link_loc.count() == 1
+            else None
+        )
+
+        trial_size_texts = await trial_loc.locator("span").all_text_contents()
+        data["trial_size"] = (
+            parse_size(trial_size_texts[0].replace("(", "").replace(")", "")) if len(trial_size_texts) == 1 else None
+        )
+
+        description_texts = await self.page.locator("div[itemprop=description]").all_text_contents()
+        data["description"] = "".join(description_texts)
+
+        data["monopoly"] = await self.page.locator("span[title=DLsite専売]").count() == 1
+
+        rating_texts = await self.page.locator("span[class='point average_count']").all_text_contents()
+        data["rating"] = float(rating_texts[0].strip()) if len(rating_texts) == 1 else None
+
+        sales_texts = await self.page.locator("dd[class=point]").all_text_contents()
+        data["sales"] = (
+            int(
+                sales_texts[0].replace(",", "").strip(),
+            )
+            if len(sales_texts) == 1
+            else None
+        )
+
+        favorites_texts = await self.page.locator("dd[class=position_fix]").all_text_contents()
+        data["favorites"] = (
+            int(
+                favorites_texts[0].replace(",", "").strip(),
+            )
+            if len(favorites_texts) == 1
+            else None
+        )
+
+        price_texts = await self.page.locator("span[class=price]").all_text_contents()
+        data["price"] = (
+            int(
+                price_texts[0].replace(",", "").replace("円", "").strip(),
+            )
+            if len(price_texts) == 1
+            else 0
+        )
+        if data["price"] == 0:
+            price_texts = await self.page.locator("div[class=work_buy_content]").all_text_contents()
+            data["price"] = (
+                int(
+                    price_texts[0].replace(",", "").replace("円", "").strip(),
+                )
+                if len(price_texts) == 1
+                else 0
+            )
+
+        chobit_link_loc = self.page.locator("div[class='work_parts type_chobit'] > iframe")
+        data["chobit_link"] = None
+        if await chobit_link_loc.count() == 1:
+            data["chobit_link"] = await chobit_link_loc.get_attribute("src")
+
+        # debug
+        # breakpoint()  # noqa: ERA001
+
+        return data
 
     async def __setup(self, playwright: Playwright) -> None:
         print("Preparing for headless chrome...", end="", flush=True)  # noqa: T201
