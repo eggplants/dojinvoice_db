@@ -42,7 +42,7 @@ mypy = "^1.1.1"
 pre-commit = ">=2.20,<4.0"
 taskipy = "^1.10.3"
 pytest = "^8.0.0"
-pytest-cov = "^4.1.0"
+pytest-cov = ">=4.1,<6.0"
 
 [tool.poetry.scripts]
 dvdb = "dojinvoice_db.main:main"
