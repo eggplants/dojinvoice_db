@@ -6,9 +6,10 @@ requires = [
   "poetry-core",
 ]
 
-[tool]
 [tool.poetry]
-authors = ["eggplants <w10776e8w@yahoo.co.jp>"]
+authors = [
+  "eggplants <w10776e8w@yahoo.co.jp>",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: MIT License",
@@ -17,9 +18,14 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
 ]
 description = "Make DB of Dojinvoice"
-keywords = ["selenium", "dlsite"]
+keywords = [
+  "selenium",
+  "dlsite",
+]
 name = "dojinvoice_db"
-packages = [{ include = "dojinvoice_db" }]
+packages = [
+  { include = "dojinvoice_db" },
+]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/eggplants/dojinvoice_db"
@@ -49,30 +55,32 @@ dvdb = "dojinvoice_db.main:main"
 
 [tool.black]
 line-length = 120
-target-version = ['py39']
+target-version = [
+  'py39',
+]
 
 [tool.ruff]
 line-length = 120
 
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = ["D", "D203", "D213", "ANN101"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/test_*.py" = [
-  "INP001", #  Add an `__init__.py`.
-  "S101",   #    Use of assert detected
+lint.select = [
+  "ALL",
 ]
-"scripts/*.py" = [
+lint.ignore = [
+  "ANN101",
+  "D",
+  "D203",
+  "D213",
+]
+lint.per-file-ignores."scripts/*.py" = [
   "D",
   "INP001", #  Add an `__init__.py`.
 ]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 18
-
-[tool.ruff.lint.pydocstyle]
-convention = "numpy"
+lint.per-file-ignores."tests/test_*.py" = [
+  "INP001", #  Add an `__init__.py`.
+  "S101",   #    Use of assert detected
+]
+lint.mccabe.max-complexity = 18
+lint.pydocstyle.convention = "numpy"
 
 [tool.isort]
 profile = "black"
@@ -82,6 +90,8 @@ pretty = true
 python_version = "3.9"
 show_error_codes = true
 strict = true
+
+[tool]
 
 [tool.poetry_bumpversion.file."dojinvoice_db/__init__.py"]
 
