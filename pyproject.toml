@@ -45,10 +45,10 @@ install-playwright = ">=0.0.1,<0.1.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.1.1"
-pre-commit = ">=2.20,<4.0"
+pre-commit = ">=2.20,<5.0"
 taskipy = "^1.10.3"
 pytest = "^8.0.0"
-pytest-cov = ">=4.1,<6.0"
+pytest-cov = ">=4.1,<7.0"
 
 [tool.poetry.scripts]
 dvdb = "dojinvoice_db.main:main"
