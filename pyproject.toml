@@ -32,7 +32,7 @@ repository = "https://github.com/eggplants/dojinvoice_db"
 version = "1.1.0"
 
 [tool.poetry.dependencies]
-python = ">3.9.7,<3.13"
+python = ">3.9.7,<4"
 beautifulsoup4 = "^4.12.3"
 humanfriendly = "^10.0"
 lxml = "^5.1.0"
