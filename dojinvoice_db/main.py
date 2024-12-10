@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import List, cast
+from typing import cast
 
 from .database import DojinvoiceDatabase
 from .download import Download
@@ -36,7 +36,7 @@ def main() -> None:
             print(f"\033[2K\r\033[31mNow: {path}\033[0m")  # noqa: T201
             d = asyncio.run(p.parse(path, page_idx))
             print(" =>committing to DB...", end="")  # noqa: T201
-            db.push(cast(List[DlsiteDict], d))
+            db.push(cast(list[DlsiteDict], d))
 
         print("DONE:", site)  # noqa: T201
 
