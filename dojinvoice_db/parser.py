@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from random import uniform
 from typing import TypedDict, cast
@@ -100,7 +100,7 @@ class Parser:
         res: list[DlsiteDict] = []
         work_page_data = [
             (work_id, work_link, thumb_link)
-            for work_link, thumb_link in zip(*self.__parse_dlsite_work_lists(path))
+            for work_link, thumb_link in zip(*self.__parse_dlsite_work_lists(path), strict=False)
             if (work_id := Path(urlparse(work_link).path).stem) not in self.exclude_ids
         ]
         if len(work_page_data) == 0:
@@ -184,11 +184,11 @@ class Parser:
         sale_date_text = (await info_table["販売日"].all_text_contents())[0].strip()
         if "時" in sale_date_text:
             data["sale_date"] = int(
-                datetime.strptime(sale_date_text, "%Y年%m月%d日 %H時").astimezone(timezone.utc).timestamp(),
+                datetime.strptime(sale_date_text, "%Y年%m月%d日 %H時").astimezone(UTC).timestamp(),
             )
         else:
             data["sale_date"] = int(
-                datetime.strptime(sale_date_text, "%Y年%m月%d日").astimezone(timezone.utc).timestamp(),
+                datetime.strptime(sale_date_text, "%Y年%m月%d日").astimezone(UTC).timestamp(),
             )
 
         data["category"] = (await info_table["作品形式"].all_text_contents())[0].strip()
