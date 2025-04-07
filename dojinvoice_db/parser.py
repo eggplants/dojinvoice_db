@@ -150,7 +150,7 @@ class Parser:
         work_link: str,
         thumb_link: str,
     ) -> DlsiteDict | None:
-        data = cast(DlsiteDict, {})
+        data = cast("DlsiteDict", {})
 
         title_texts = await self.page.locator("h1#work_name").all_text_contents()
         if len(title_texts) != 1:
