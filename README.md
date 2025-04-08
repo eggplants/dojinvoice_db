@@ -15,12 +15,16 @@
 )](
   <https://badge.fury.io/py/dojinvoice_db>
 ) [![Maintainability](
-  <https://api.codeclimate.com/v1/badges/f9942612576bc3a99dbd/maintainability>
-)](
-  <https://codeclimate.com/github/eggplants/dojinvoice_db/maintainability>
+  <https://qlty.sh/badges/0c15ff3a-7972-4c90-a7a9-de4299ba05e5/maintainability.svg>
+  )](
+  <https://qlty.sh/gh/eggplants/projects/dojinvoice_db>
 ) [![MIT License](
   <http://img.shields.io/badge/license-MIT-blue.svg?style=flat>
-)](LICENSE)
+)](LICENSE) [![Code Coverage](
+  <https://qlty.sh/badges/0c15ff3a-7972-4c90-a7a9-de4299ba05e5/test_coverage.svg>
+  )](
+  <https://qlty.sh/gh/eggplants/projects/dojinvoice_db>
+)
 
 Dojinvoice (同人音声) DB
 
