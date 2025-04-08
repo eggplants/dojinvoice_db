@@ -1,3 +1,5 @@
+"""Parse the page and extract required information."""
+
 from __future__ import annotations
 
 import contextlib
@@ -15,12 +17,16 @@ from playwright._impl._errors import Error as PlaywrightUnknownError
 from playwright._impl._errors import TargetClosedError
 from playwright.async_api import BrowserContext, Playwright, async_playwright
 
+LOGGER = logging.getLogger(__name__)
+
 
 class UnknownSiteError(Exception):
-    pass
+    """Unknown site error."""
 
 
 class DlsiteDict(TypedDict):
+    """DLsite dictionary."""
+
     work_id: str
     detail_link: str
     title: str
@@ -52,6 +58,8 @@ class DlsiteDict(TypedDict):
 
 
 class DmmDict(TypedDict):
+    """DMM dictionary."""
+
     work_id: str
     detail_link: str
     title: str
@@ -82,14 +90,28 @@ UA = {
 
 
 class Parser:
+    """Parse the page and extract required information."""
+
     def __init__(self, site: str, exclude_ids: list[str] | None = None) -> None:
-        """Init."""
+        """Initialize the parser.
+
+        Args:
+            site (str): Site to parse.
+            exclude_ids (list[str] | None): List of IDs to exclude from parsing.
+        """
         self.site = site
         self.exclude_ids = exclude_ids or []
 
     async def parse(self, path: Path, page_idx: int = 0) -> list[DlsiteDict] | list[DmmDict]:
-        """Extract required information from the page sources and scrape it."""
+        """Extract required information from the page sources and scrape it.
 
+        Args:
+            path (Path): Path to the page source file.
+            page_idx (int): Index of the page.
+
+        Returns:
+            list[DlsiteDict] | list[DmmDict]: List of extracted information.
+        """
         self.page_idx = page_idx
         if self.site == "dlsite":
             return await self.__parse_dlsite_pages(path)
@@ -121,7 +143,7 @@ class Parser:
                         break
                     except (TargetClosedError, PlaywrightUnknownError) as e:
                         msg = f"time: {time}, link: {work_link}, error: {e.message}"
-                        logging.warning(msg)
+                        LOGGER.warning(msg)
                         await self.__close()
                         await self.__setup(playwright)
                 else:
@@ -150,7 +172,7 @@ class Parser:
         work_link: str,
         thumb_link: str,
     ) -> DlsiteDict | None:
-        data = cast(DlsiteDict, {})
+        data = cast("DlsiteDict", {})
 
         title_texts = await self.page.locator("h1#work_name").all_text_contents()
         if len(title_texts) != 1:

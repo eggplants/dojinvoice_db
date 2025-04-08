@@ -1,3 +1,5 @@
+"""Database module for Dojinvoice."""
+
 from __future__ import annotations
 
 import logging
@@ -7,10 +9,19 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from .parser import DlsiteDict
 
+LOGGER = logging.getLogger(__name__)
+
 
 class DojinvoiceDatabase:
+    """Database class for Dojinvoice."""
+
     def __init__(self, db_filepath: str, log: str = ".log") -> None:
-        """Init."""
+        """Initialize the database.
+
+        Args:
+            db_filepath (str): Path to the database file.
+            log (str): Path to the log file. Default is ".log".
+        """
         self.db_filepath = db_filepath
         f = logging.FileHandler(log)
         f.setLevel(logging.DEBUG)
@@ -21,7 +32,12 @@ class DojinvoiceDatabase:
         connect(self.db_filepath)
 
     def __connect_db(self, sql: str, p: list[tuple[Any, ...]] | None = None) -> None:
-        """Connect to the database and execute the SQL."""
+        """Connect to the database and execute the SQL.
+
+        Args:
+            sql (str): SQL to execute.
+            p (list[tuple[Any, ...]] | None): Parameters for the SQL. Default is None.
+        """
         conn = None
         try:
             conn = connect(self.db_filepath)
@@ -38,14 +54,19 @@ class DojinvoiceDatabase:
             if msg[0:5] == "table" and msg[-14:] == "already exists":
                 pass
             else:
-                logging.exception("[DB Error]: {e}")
-                logging.exception("- [SQL]: {sql}")
-                logging.exception("- [Return]: {p}")
+                LOGGER.exception("[DB Error]: {e}")
+                LOGGER.exception("- [SQL]: {sql}")
+                LOGGER.exception("- [Return]: {p}")
         finally:
             if conn:
                 conn.close()
 
     def get_work_ids(self) -> list[str]:
+        """Get all work IDs from the database.
+
+        Returns:
+            list[str]: List of work IDs.
+        """
         conn = connect(self.db_filepath)
         c = conn.cursor().execute("select work_id from work")
         res = [i[0] for i in c]
@@ -57,7 +78,6 @@ class DojinvoiceDatabase:
 
     def create_tables(self) -> None:
         """Create the tables."""
-
         self.__create_table(
             """work (
                     work_id text primary key,

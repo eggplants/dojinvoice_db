@@ -1,3 +1,5 @@
+"""Download pages from a site."""
+
 from __future__ import annotations
 
 import shutil
@@ -14,8 +16,14 @@ UA = {
 
 
 class Download:
+    """Download pages from a site."""
+
     def __init__(self, site: str) -> None:
-        """Init."""
+        """Init.
+
+        Args:
+            site (str): Site to download from.
+        """
         self.site = site
         self.save_dir = Path.cwd() / self.site
 
@@ -25,6 +33,7 @@ class Download:
             self.get_dlsite_pages()
 
     def get_dlsite_pages(self) -> None:
+        """Get pages from DLsite."""
         root = (
             "https://www.dlsite.com/maniax/fsr/=/language/jp/"
             "sex_category%5B0%5D/male/work_category%5B0%5D/doujin/"
@@ -36,11 +45,11 @@ class Download:
         shutil.rmtree(self.save_dir, ignore_errors=True)
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
-        pagenation = 0
+        pagination = 0
         while True:
-            pagenation += 1
-            filename = f"{pagenation:05}.html"
-            url = root.format(pagenation)
+            pagination += 1
+            filename = f"{pagination:05}.html"
+            url = root.format(pagination)
             print(f"\33[2K\rnow: {filename}", end="", flush=True)  # noqa: T201
             page_source = requests.get(url, headers=UA, timeout=10).text
             if self.__check_work(page_source):

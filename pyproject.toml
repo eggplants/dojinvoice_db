@@ -1,12 +1,9 @@
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = [
-  "poetry-core>=2",
-]
+build-backend = "hatchling.build"
+requires = [ "hatchling", "uv-dynamic-versioning" ]
 
 [project]
 name = "dojinvoice-db"
-version = "2.0.0"
 description = "Make DB of Dojinvoice"
 readme = "README.md"
 keywords = [
@@ -14,9 +11,7 @@ keywords = [
   "selenium",
 ]
 license = { text = "MIT" }
-authors = [
-  { name = "eggplants", email = "w10776e8w@yahoo.co.jp" },
-]
+authors = [ { name = "eggplants", email = "w10776e8w@yahoo.co.jp" } ]
 requires-python = ">=3.12,<4"
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -27,6 +22,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Typing :: Typed",
 ]
+dynamic = [ "version" ]
 dependencies = [
   "beautifulsoup4>=4.12.3,<5",
   "humanfriendly>=10,<11",
@@ -42,54 +38,65 @@ dependencies = [
 urls.Repository = "https://github.com/eggplants/dojinvoice_db"
 scripts.dvdb = "dojinvoice_db.main:main"
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [
-  { include = "dojinvoice_db" },
+[dependency-groups]
+dev = [
+  "mypy>=1.1.1,<2",
+  "pre-commit>=2.20,<5",
+  "pytest>=8,<9",
+  "pytest-cov>=4.1,<7",
+  "taskipy>=1.10.3,<2",
 ]
+docs = [ "pdoc" ]
 
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.1.1"
-pre-commit = ">=2.20,<5.0"
-taskipy = "^1.10.3"
-pytest = "^8.0.0"
-pytest-cov = ">=4.1,<7.0"
+[tool.hatch.version]
+# tool.hatch.version.source is not listed in official schema.
+# https://github.com/ninoseki/uv-dynamic-versioning/issues/21
+source = "uv-dynamic-versioning"
 
-[tool.poetry.requires-plugins]
-poetry-plugin-shell = ">=1.0"
+[tool.hatch.build.targets.sdist]
+include = [ "dojinvoice_db" ]
 
-[tool.black]
-line-length = 120
-target-version = [
-  'py312',
-]
+[tool.hatch.build.targets.wheel]
+include = [ "dojinvoice_db" ]
 
 [tool.ruff]
 line-length = 120
-
+format.indent-style = "space"
+format.quote-style = "double"
 lint.select = [
   "ALL",
 ]
 lint.ignore = [
-  "D",
-  "D203",
-  "D213",
+]
+lint.per-file-ignores."main.py" = [
+  "T201", # `print` found
 ]
 lint.per-file-ignores."scripts/*.py" = [
   "D",
-  "INP001", #  Add an `__init__.py`.
+  "INP001", # Add an `__init__.py`.
 ]
-lint.per-file-ignores."tests/test_*.py" = [
-  "S101", #    Use of assert detected
+lint.per-file-ignores."tests/*.py" = [
+  "D",
+  "S101", # Use of assert detected
 ]
-lint.mccabe.max-complexity = 18
-lint.pydocstyle.convention = "numpy"
+lint.pydocstyle.convention = "google"
 
 [tool.mypy]
 pretty = true
 python_version = "3.12"
 show_error_codes = true
 strict = true
+
+[tool.uv]
+default-groups = [
+  "dev",
+  "docs",
+]
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "semver"
+fallback-version = "0.0.0"
 
 [tool.taskipy.tasks]
 test = "pytest --cov=dojinvoice_db --cov-report=term"
