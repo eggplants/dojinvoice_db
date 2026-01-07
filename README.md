@@ -1,29 +1,13 @@
 # dojinvoice_db
 
-[![Release Package](
-  <https://github.com/eggplants/dojinvoice_db/workflows/Release%20Package/badge.svg>
-)](
-  <https://github.com/eggplants/dojinvoice_db/actions/runs/355419760>
-) [![pre-commit.ci status](
-  <https://results.pre-commit.ci/badge/github/eggplants/dojinvoice_db/main.svg>
-)](
-  <https://results.pre-commit.ci/latest/github/eggplants/dojinvoice_db/main>
-)
-
-[![PyPI version](
+ [![PyPI version](
   <https://badge.fury.io/py/dojinvoice-db.svg>
 )](
   <https://badge.fury.io/py/dojinvoice_db>
-) [![Maintainability](
-  <https://qlty.sh/badges/0c15ff3a-7972-4c90-a7a9-de4299ba05e5/maintainability.svg>
+) [![CI](
+  <https://github.com/eggplants/dojinvoice_db/actions/workflows/ci.yml/badge.svg>
   )](
-  <https://qlty.sh/gh/eggplants/projects/dojinvoice_db>
-) [![MIT License](
-  <http://img.shields.io/badge/license-MIT-blue.svg?style=flat>
-)](LICENSE) [![Code Coverage](
-  <https://qlty.sh/badges/0c15ff3a-7972-4c90-a7a9-de4299ba05e5/test_coverage.svg>
-  )](
-  <https://qlty.sh/gh/eggplants/projects/dojinvoice_db>
+  <https://github.com/eggplants/dojinvoice_db/actions/workflows/ci.yml>
 )
 
 Dojinvoice (同人音声) DB

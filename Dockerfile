@@ -1,14 +1,18 @@
-FROM python:3
+FROM python:3.14-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG VERSION
-ENV VERSION ${VERSION:-main}
+COPY . /app
 
-# set display port to avoid crash
-ENV DISPLAY=:99
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV UV_NO_DEV=1
+ENV PYTHONUNBUFFERED=1
 
-# pip
-RUN python -m pip --no-cache-dir install git+https://github.com/eggplants/dojinvoice_db@${VERSION}
+WORKDIR /app
+RUN uv sync --locked --no-dev
 
-CMD ["dvdb"]
+ENV PATH="/app/.venv/bin:$PATH"
+
+CMD ["uv", "run", "dvdb"]
