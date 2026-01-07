@@ -215,7 +215,7 @@ class Parser:
 
         data["category"] = (await info_table["作品形式"].all_text_contents())[0].strip()
 
-        sales_texts = await info_table["シリーズ名"].all_text_contents() if "シリーズ名" in info_table else ()
+        sales_texts = await info_table["シリーズ名"].all_text_contents() if "シリーズ名" in info_table else []
         data["series"] = sales_texts[0].strip() if len(sales_texts) == 1 else None
 
         data["writers"] = (
@@ -345,7 +345,7 @@ class Parser:
     async def __setup(self, playwright: Playwright) -> None:
         print("Preparing for headless chrome...", end="", flush=True)  # noqa: T201
 
-        install(playwright.chromium)
+        install([playwright.chromium])
         self.browser = await playwright.chromium.launch(
             headless=True,
             args=[

@@ -1,0 +1,46 @@
+{
+  "language": "en_US",
+  "words": [
+    "asyncio",
+    "beautifulsoup",
+    "chobit",
+    "cien",
+    "cooldown",
+    "distroless",
+    "dlsite",
+    "docformat",
+    "dojinvoice",
+    "dvdb",
+    "humanfriendly",
+    "junitxml",
+    "lxml",
+    "nonroot",
+    "pdoc",
+    "pipefail",
+    "pydocstyle",
+    "pymarkdown",
+    "pymarkdownlnt",
+    "pypi",
+    "pyproject",
+    "pytest",
+    "PYTHONUNBUFFERED",
+    "sdist",
+    "shellsession",
+    "venv"
+  ],
+  "dictionaries": [
+    "companies",
+    "markdown",
+    "misc",
+    "softwareTerms",
+    "useCompounds"
+  ],
+  "ignorePaths": [
+    ".gitignore",
+    ".cspell.json"
+  ],
+  "features": {
+    "weighted-suggestions": true
+  },
+  "useGitignore": true
+}
