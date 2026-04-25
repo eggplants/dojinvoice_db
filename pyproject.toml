@@ -10,7 +10,7 @@ keywords = [
   "dlsite",
   "selenium",
 ]
-license = { text = "MIT" }
+license = "MIT"
 authors = [ { name = "eggplants", email = "w10776e8w@yahoo.co.jp" } ]
 requires-python = ">=3.12,<4"
 classifiers = [
@@ -35,7 +35,6 @@ dependencies = [
   "types-humanfriendly>=10.0.1.20241221,<11",
   "types-requests>=2.32.0.20241016,<3",
 ]
-
 urls.Repository = "https://github.com/eggplants/dojinvoice_db"
 scripts.dvdb = "dojinvoice_db.main:main"
 
@@ -51,16 +50,13 @@ docs = [
   "pdoc>=16",
 ]
 
-[tool.hatch.version]
-source = "uv-dynamic-versioning"
-
-[tool.hatch.build.targets.sdist]
-include = [ "dojinvoice_db" ]
-
-[tool.hatch.build.targets.wheel]
-include = [ "dojinvoice_db" ]
+[tool.hatch]
+build.targets.sdist.include = [ "dojinvoice_db" ]
+build.targets.wheel.include = [ "dojinvoice_db" ]
+version.source = "uv-dynamic-versioning"
 
 [tool.uv]
+python-downloads = "never"
 default-groups = [
   "dev",
   "docs",
