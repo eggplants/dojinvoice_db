@@ -39,19 +39,6 @@ dvdb crawl --sex-category male --sex-category female
 dvdb crawl --work-type SOU --work-type MUS
 ```
 
-## Prebuilt database
-
-The `data` workflow runs once a month (00:00 JST) and publishes a snapshot as
-`dojinvoice.db.zip` on a `vX.Y.Z+YYYYMMDD` release — the package version plus the
-JST run date. Each run restores the previous snapshot and only crawls what DLsite
-has published since, so the releases form a continuous history of one database.
-
-```bash
-gh release download --pattern dojinvoice.db.zip
-unzip dojinvoice.db.zip
-dvdb stats
-```
-
 ## Schema
 
 Regenerate with `mise run tbls`.
