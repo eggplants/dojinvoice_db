@@ -1,4 +1,8 @@
 [tools]
+"aqua:azu/dockerfile-pin" = "latest"
+"aqua:k1LoW/tbls" = "latest"
+claude = "latest"
+pinact = "latest"
 python = "latest"
 usage = "latest"
 uv = "latest"
@@ -35,6 +39,18 @@ run = "uv build"
 [tasks.docs]
 description = "Generate documentation"
 run = "uv run pdoc dojinvoice_db -o ./docs --docformat google"
+
+[tasks.tbls]
+description = "Generate the schema documentation embedded in README.md"
+depends = ["uv-sync"]
+run = """
+#!/usr/bin/env bash
+set -euxo pipefail
+rm -f .tbls.db .tbls.db-shm .tbls.db-wal
+uv run python -c 'from dojinvoice_db.db import WorkDatabase; WorkDatabase(".tbls.db").close()'
+tbls doc --rm-dist --force
+uv run python scripts/embed_tbls_doc.py
+"""
 
 [tasks.pyproject-fmt]
 description = "Run pyproject-fmt"

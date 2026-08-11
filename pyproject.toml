@@ -4,39 +4,38 @@ requires = [ "hatchling", "uv-dynamic-versioning" ]
 
 [project]
 name = "dojinvoice-db"
-description = "Make DB of Dojinvoice"
+description = "Build and incrementally update a SQLite database of DLsite doujin voice works"
 readme = "README.md"
 keywords = [
+  "asmr",
   "dlsite",
-  "selenium",
+  "doujin",
+  "sqlite",
 ]
-license = "MIT"
-authors = [ { name = "eggplants", email = "w10776e8w@yahoo.co.jp" } ]
-requires-python = ">=3.12,<4"
+license = { text = "MIT" }
+authors = [ { name = "eggplants" } ]
+requires-python = ">=3.11"
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Database",
+  "Topic :: Utilities",
   "Typing :: Typed",
 ]
 dynamic = [ "version" ]
 dependencies = [
-  "beautifulsoup4>=4.12.3,<5",
-  "humanfriendly>=10,<11",
-  "install-playwright>=0.1,<1.1",
-  "lxml>=5.3,<7",
-  "playwright>=1.49.1,<2",
-  "requests>=2.32.3,<3",
-  "types-beautifulsoup4>=4.12.0.20241020,<5",
-  "types-humanfriendly>=10.0.1.20241221,<11",
-  "types-requests>=2.32.0.20241016,<3",
+  "dlsite-async>=0.10.2,<1",
 ]
 urls.Repository = "https://github.com/eggplants/dojinvoice_db"
-scripts.dvdb = "dojinvoice_db.main:main"
+scripts.dvdb = "dojinvoice_db.cli:main"
 
 [dependency-groups]
 dev = [
@@ -51,9 +50,9 @@ docs = [
 ]
 
 [tool.hatch]
-build.targets.sdist.include = [ "dojinvoice_db" ]
-build.targets.wheel.include = [ "dojinvoice_db" ]
 version.source = "uv-dynamic-versioning"
+build.targets.wheel.packages = [ "dojinvoice_db" ]
+build.targets.sdist.packages = [ "dojinvoice_db" ]
 
 [tool.uv]
 python-downloads = "never"
@@ -61,29 +60,41 @@ default-groups = [
   "dev",
   "docs",
 ]
+exclude-newer = "P7D"
+preview = true
 
 [tool.ruff]
 line-length = 120
 format.indent-style = "space"
 format.quote-style = "double"
-lint.select = [
-  "ALL",
-]
+lint.select = [ "ALL" ]
 lint.ignore = [
   "COM812",
+  "D",
 ]
-lint.per-file-ignores."main.py" = [
+lint.per-file-ignores."dojinvoice_db/cli.py" = [
   "T201", # `print` found
 ]
-lint.per-file-ignores."scripts/*.py" = [
-  "D",
-  "INP001", # Add an `__init__.py`.
+lint.per-file-ignores."scripts/**" = [
+  "CPY001", # Missing copyright notice
+  "INP001", # Implicit namespace package (standalone dev scripts)
+  "T201",   # `print` found
 ]
-lint.per-file-ignores."tests/*.py" = [
-  "D",
-  "S101", # Use of assert detected
+lint.per-file-ignores."tests/**" = [
+  "ANN",     # Missing type annotations (tests/fixtures)
+  "ARG",     # Unused arguments (pytest fixtures, lambda stubs)
+  "CPY001",  # Missing copyright notice
+  "DTZ",     # Naive datetimes (deterministic fixtures)
+  "INP001",  # Implicit namespace package (no __init__ in tests)
+  "PLR2004", # Magic value used in comparison
+  "S101",    # Use of assert detected
+  "SLF001",  # Private member accessed
+  "T201",    # `print` found
 ]
 lint.pydocstyle.convention = "google"
+
+[tool.pytest]
+ini_options.asyncio_mode = "auto"
 
 [tool.uv-dynamic-versioning]
 vcs = "git"
