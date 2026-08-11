@@ -27,7 +27,6 @@
   <ul>
     <li><a href="#install">Install</a></li>
     <li><a href="#cli">CLI</a></li>
-    <li><a href="#prebuilt-database">Prebuilt database</a></li>
     <li><a href="#schema">Schema</a></li>
   </ul></li>
 </ul>
@@ -92,20 +91,6 @@ dvdb<span class="w"> </span>stats
 
 dvdb<span class="w"> </span>crawl<span class="w"> </span>--sex-category<span class="w"> </span>male<span class="w"> </span>--sex-category<span class="w"> </span>female
 dvdb<span class="w"> </span>crawl<span class="w"> </span>--work-type<span class="w"> </span>SOU<span class="w"> </span>--work-type<span class="w"> </span>MUS
-</code></pre>
-</div>
-
-<h2 id="prebuilt-database">Prebuilt database</h2>
-
-<p>The <code>data</code> workflow runs once a month (00:00 JST) and publishes a snapshot as
-<code>dojinvoice.db.zip</code> on a <code>vX.Y.Z+YYYYMMDD</code> release — the package version plus the
-JST run date. Each run restores the previous snapshot and only crawls what DLsite
-has published since, so the releases form a continuous history of one database.</p>
-
-<div class="pdoc-code codehilite">
-<pre><span></span><code>gh<span class="w"> </span>release<span class="w"> </span>download<span class="w"> </span>--pattern<span class="w"> </span>dojinvoice.db.zip
-unzip<span class="w"> </span>dojinvoice.db.zip
-dvdb<span class="w"> </span>stats
 </code></pre>
 </div>
 
