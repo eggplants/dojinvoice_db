@@ -1,10 +1,10 @@
 [tools]
-"aqua:azu/dockerfile-pin" = "latest"
+"aqua:azu/dockerfile-pin" = "latest" # [skip ci]
 "aqua:k1LoW/tbls" = "latest"
-claude = "latest"
-pinact = "latest"
+claude = "latest" # [skip ci]
+pinact = "latest" # [skip ci]
+usage = "latest" # [skip ci]
 python = "latest"
-usage = "latest"
 uv = "latest"
 
 [tasks.ruff]
