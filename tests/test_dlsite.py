@@ -13,7 +13,9 @@ from dojinvoice_db.dlsite import (
     WorkNotFoundError,
     _Throttle,
     batched,
+    escape_stray_brackets,
     extract_product_ids,
+    parse_detail_html,
     work_from_info,
 )
 from dojinvoice_db.models import SearchQuery
@@ -144,6 +146,25 @@ async def test_fetch_detail_falls_back_to_announce_page(monkeypatch):
     assert detailed.genre == ["ASMR"]
     assert len(seen) == 2
     assert "/announce/" in seen[1]
+
+
+def test_escape_stray_brackets_keeps_real_tags():
+    html = '<table id="t"><tr><td><a href="/x">y</a><br />z</td></tr></table><!-- c -->'
+    assert escape_stray_brackets(html) == html
+
+
+def test_escape_stray_brackets_escapes_pseudo_tags():
+    assert escape_stray_brackets("a < b and <台本、オホ声>") == "a &lt; b and &lt;台本、オホ声>"
+
+
+def test_parse_detail_html_survives_unescaped_brackets_in_description():
+    html = (
+        "<html><body>"
+        '<table id="work_outline"><tr><th>ジャンル</th><td><a>ASMR</a></td></tr></table>'
+        "<div>◆4.<JKの家に訪問、いちゃいちゃ、同時絶頂&潮吹き></div>"
+        "</body></html>"
+    )
+    assert parse_detail_html(html)["genre"] == ["ASMR"]
 
 
 class FakeResponse:

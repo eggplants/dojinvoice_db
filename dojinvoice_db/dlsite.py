@@ -49,6 +49,11 @@ _PRODUCT_ID_RE = re.compile(r'data-list_item_product_id="([A-Z]{2}\d+)"')
 
 _RETRY_STATUSES = frozenset({408, 425, 429, 500, 502, 503, 504})
 
+# A "<" that does not open a tag, a closing tag, a comment/doctype or a PI.
+# Descriptions written by circles regularly contain bare "<track list>" style
+# text; BeautifulSoup turns those into elements whose name lxml then rejects.
+_STRAY_BRACKET_RE = re.compile(r"<(?![!?]|/?[A-Za-z][A-Za-z0-9._:-]*[\s/>])")
+
 
 def _import_parse_work_html() -> Callable[[str], dict[str, Any]] | None:
     """Return ``dlsite-async``'s work page parser, or ``None`` if it moved.
@@ -77,6 +82,33 @@ def extract_product_ids(html: str) -> list[str]:
     Duplicates are dropped while preserving the first occurrence.
     """
     return list(dict.fromkeys(match.group(1) for match in _PRODUCT_ID_RE.finditer(html)))
+
+
+def escape_stray_brackets(html: str) -> str:
+    """Escape ``<`` characters that do not open a tag.
+
+    Work descriptions contain unescaped angle brackets often enough to matter
+    (``<track list, ...>`` headings), and a bracket followed by Japanese text
+    becomes a tag name lxml refuses to build an element for.
+    """
+    return _STRAY_BRACKET_RE.sub("&lt;", html)
+
+
+def parse_detail_html(html: str) -> dict[str, Any]:
+    """Parse a work page into the fields ``dlsite_async`` scrapes from it.
+
+    Retries once with :func:`escape_stray_brackets` when the raw HTML produces
+    an element name the parser rejects, so a single bad description does not
+    cost the work its detail row.
+    """
+    if parse_work_html is None:  # pragma: no cover - dependency fallback
+        msg = "dlsite_async._scraper.parse_work_html is unavailable"
+        raise WorkNotFoundError(msg)
+    try:
+        return parse_work_html(html)
+    except ValueError as e:
+        LOGGER.debug("retrying work page parse with escaped brackets: %s", e)
+        return parse_work_html(escape_stray_brackets(html))
 
 
 def _to_datetime(value: Any) -> datetime | None:  # noqa: ANN401 - raw JSON value
@@ -255,7 +287,7 @@ class DlsiteClient:
             url = f"https://www.dlsite.com/{site_id}/{kind}/=/product_id/{work.product_id}.html/"
             html = await self._get_text(url)
             if html:
-                return replace(work, **parse_work_html(html))
+                return replace(work, **parse_detail_html(html))
         msg = f"no work or announce page for {work.product_id}"
         raise WorkNotFoundError(msg)
 
