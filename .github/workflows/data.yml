@@ -1,0 +1,117 @@
+name: data
+
+on:
+  schedule:
+    - cron: "0 15 1 * *"
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Read the whole listing instead of stopping after known pages"
+        type: boolean
+        default: false
+      limit:
+        description: "Process at most this many works (empty = no limit)"
+        type: string
+        default: ""
+      from_scratch:
+        description: "Ignore the previous release's database and build from empty"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+env:
+  DB: dojinvoice.db
+  ZIP: dojinvoice.db.zip
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # tags: the release version is derived from them
+      - uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
+      - run: uv sync --locked --no-default-groups
+
+      - name: Restore the database from the last release that has one
+        if: ${{ !inputs.from_scratch }}
+        run: |
+          set -euo pipefail
+          for tag in $(gh release list --limit 30 --exclude-drafts --json tagName --jq '.[].tagName'); do
+            if gh release download "$tag" --pattern "$ZIP" --dir . 2>/dev/null; then
+              echo "restored $ZIP from release $tag"
+              unzip -o "$ZIP"
+              rm -f "$ZIP"
+              break
+            fi
+          done
+          if [ ! -f "$DB" ]; then
+            echo "::notice::no release carries $ZIP yet; crawling into an empty database"
+          fi
+
+      - name: Crawl works published since the last snapshot
+        env:
+          FULL: ${{ inputs.full }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          set -uo pipefail
+          args=(--db "$DB" --retry-errors)
+          [ "${FULL:-}" = "true" ] && args+=(--full)
+          if [ -n "${LIMIT:-}" ]; then
+            case "$LIMIT" in
+              *[!0-9]*) echo "::error::limit must be a number, got '$LIMIT'"; exit 2 ;;
+              *) args+=(--limit "$LIMIT") ;;
+            esac
+          fi
+          timeout --signal=INT --kill-after=2m 300m uv run dvdb crawl "${args[@]}" 2> crawl.log
+          status=$?
+          tail -n 20 crawl.log
+          case "$status" in
+            0) ;;
+            124 | 130) echo "::warning::crawl stopped at the time limit (exit $status); publishing what it fetched" ;;
+            *) exit "$status" ;;
+          esac
+
+      - name: Package the database
+        run: |
+          set -euo pipefail
+          uv run python -c "
+          import sqlite3, sys
+          con = sqlite3.connect(sys.argv[1])
+          con.execute('pragma wal_checkpoint(truncate)')
+          con.execute('vacuum')
+          con.close()
+          " "$DB"
+          uv run dvdb stats --db "$DB" | tee stats.txt
+          zip -9 "$ZIP" "$DB"
+          ls -lh "$ZIP"
+
+      - name: Publish the snapshot release
+        run: |
+          set -euo pipefail
+          base=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | grep -v '+' | head -n1 || true)
+          tag="${base:-v0.0.0}+$(TZ=Asia/Tokyo date +%Y%m%d)"
+          {
+            echo "Database snapshot crawled on $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M JST')."
+            echo
+            echo '```'
+            cat stats.txt
+            echo '```'
+          } > notes.md
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$ZIP" --clobber
+            gh release edit "$tag" --notes-file notes.md
+          else
+            gh release create "$tag" "$ZIP" --title "$tag" --notes-file notes.md --latest
+          fi

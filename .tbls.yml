@@ -1,0 +1,27 @@
+---
+# Schema documentation config for tbls (https://github.com/k1LoW/tbls).
+#
+# `.tbls.db` is a throwaway, schema-only SQLite file created from
+# `dojinvoice_db.db.WorkDatabase` — never a real crawled database — so the
+# generated docs describe the schema the code ships, not whatever happens to
+# be on disk. `mise run tbls` builds it, runs `tbls doc`, and embeds the
+# result into README.md. Both paths are gitignored.
+name: dojinvoice.db
+desc: SQLite database of DLsite doujin voice works
+
+# `./` is load-bearing: `sq://.tbls.db` parses as an opaque URL and is rejected.
+dsn: sq://./.tbls.db
+docPath: .tbls-doc
+
+format:
+  # Column padding is pointless here: rewriting the `*.md` links to anchors
+  # changes every cell width anyway.
+  adjust: false
+  sort: false
+  number: false
+
+er:
+  format: mermaid
+  # No table/column comments to show, so this would only add empty `""` cells.
+  comment: false
+  distance: 2
