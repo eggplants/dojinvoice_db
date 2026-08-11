@@ -40,7 +40,7 @@ scripts.dvdb = "dojinvoice_db.cli:main"
 [dependency-groups]
 dev = [
   "pymarkdownlnt>=0.9.33",
-  "pyproject-fmt>=2.11.1",
+  "pyproject-fmt>=2.27.0",
   "pytest>=9.0.2",
   "pytest-asyncio>=1.3",
   "pytest-cov>=7",
