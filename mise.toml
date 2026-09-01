@@ -6,6 +6,7 @@ pinact = "latest" # [skip ci]
 usage = "latest" # [skip ci]
 python = "latest"
 uv = "latest"
+"pipx:git-filter-repo" = "latest"
 
 [tasks.ruff]
 description = "Run Ruff"
