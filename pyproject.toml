@@ -81,6 +81,7 @@ format.quote-style = "double"
 lint.select = [ "ALL" ]
 lint.ignore = [
   "COM812",
+  "CPY001", # Missing copyright notice (this project does not use file headers)
   "D",
 ]
 lint.per-file-ignores."dojinvoice_db/cli.py" = [
