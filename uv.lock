@@ -496,7 +496,7 @@ wheels = [
 
 [[package]]
 name = "dlsite-async"
-version = "0.10.3"
+version = "0.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -505,9 +505,9 @@ dependencies = [
     { name = "lxml" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b1/2a/844a7aaf4de8abedc5626a237742e9ed17ecfba3a33a3ef4ec88b8eab292/dlsite_async-0.10.3.tar.gz", hash = "sha256:14825c4e8bb94c308f2569cadd930e86a6fadf5f5c05cd40009e83f2bf6705f8", size = 37045, upload-time = "2026-09-12T15:03:39.129Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/4e/22073e6898a4ce53875d77d3168b5e9e1bc62a80f7e0310a88fa5524347a/dlsite_async-0.11.0.tar.gz", hash = "sha256:65d1b22a20e242ca655401a3beaf3d4e6c4941edcd99cdc5b99431d081ffa980", size = 37607, upload-time = "2026-09-25T07:03:20.643Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/77/79/91ea631367e0ad119a0b2ef2b0699a7d336c829ac0ccb6d43d8e45e7bca9/dlsite_async-0.10.3-py3-none-any.whl", hash = "sha256:049d717c43690717b3166737284ecca896eaf2847e1aeaa4e5c397f68db4f1ca", size = 34826, upload-time = "2026-09-12T15:03:38.218Z" },
+    { url = "https://files.pythonhosted.org/packages/31/9d/0636f9642b1ec6a436bab16e1e57f373cda98334a9867eb5636acb077aa5/dlsite_async-0.11.0-py3-none-any.whl", hash = "sha256:e5b688d9b5739a0789e84fa38f18a5c574bafe49592baf350e8bca27644f1bf6", size = 35344, upload-time = "2026-09-25T07:03:19.131Z" },
 ]
 
 [[package]]
