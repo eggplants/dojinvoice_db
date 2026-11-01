@@ -1,5 +1,5 @@
 version = 1
-revision = 4
+revision = 5
 requires-python = ">=3.11"
 
 [options]
@@ -496,7 +496,7 @@ wheels = [
 
 [[package]]
 name = "dlsite-async"
-version = "0.11.0"
+version = "0.11.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -505,14 +505,15 @@ dependencies = [
     { name = "lxml" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/4e/22073e6898a4ce53875d77d3168b5e9e1bc62a80f7e0310a88fa5524347a/dlsite_async-0.11.0.tar.gz", hash = "sha256:65d1b22a20e242ca655401a3beaf3d4e6c4941edcd99cdc5b99431d081ffa980", size = 37607, upload-time = "2026-09-25T07:03:20.643Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/0f/c1a1cda7d1b3b5b1d49a4e3fb0cf0b4fad664dd176ae06e63f08311c09ba/dlsite_async-0.11.2.tar.gz", hash = "sha256:b536f96dc083df93c77bf7076fb17fb67b290a721d3c0dff5111dba0c6567092", size = 37976, upload-time = "2026-10-23T05:34:45.758Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/9d/0636f9642b1ec6a436bab16e1e57f373cda98334a9867eb5636acb077aa5/dlsite_async-0.11.0-py3-none-any.whl", hash = "sha256:e5b688d9b5739a0789e84fa38f18a5c574bafe49592baf350e8bca27644f1bf6", size = 35344, upload-time = "2026-09-25T07:03:19.131Z" },
+    { url = "https://files.pythonhosted.org/packages/43/f6/f76f4d7c02d04f667e7c0eb07a864f0d86e25be9bcf8f27a567b8c94fd07/dlsite_async-0.11.2-py3-none-any.whl", hash = "sha256:7af7b352a647f69cd678d76f9d4136fb6c47df20ff797eb070623a49df1b03ce", size = 35341, upload-time = "2026-10-23T05:34:44.552Z" },
 ]
 
 [[package]]
 name = "dojinvoice-db"
 source = { editable = "." }
+default-groups = ["dev", "docs"]
 dependencies = [
     { name = "dlsite-async" },
 ]
